@@ -1,9 +1,9 @@
 import { Request, Response } from 'express'
 import { ExtractDoc } from 'ts-mongoose'
 import bcrypt from 'bcrypt'
-import { errorFeedBack } from '../../../FeedBack'
-import User, { UserSchema } from '../../../mongo-models/User'
-import nodeMailer from '../../../send-mailer/send-to-mail'
+import { errorFeedBack } from '../../FeedBack'
+import User, { UserSchema } from '../../mongo-models/User'
+import nodeMailer from '../../send-mailer/send-to-mail'
 
 class ResetPassword {
   public async resetPassword(req: Request, res: Response) {

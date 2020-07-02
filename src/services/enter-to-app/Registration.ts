@@ -1,11 +1,11 @@
 import { Request, Response } from 'express'
 import { ExtractDoc } from 'ts-mongoose'
 import bcrypt from 'bcrypt'
-import { errorFeedBack } from '../../../FeedBack'
-import User, { UserSchema } from '../../../mongo-models/User'
-import TokenCreator, { Tokens } from '../../../token-creator/tokenCreator'
-import { ErrorResponse } from '../../../router'
-import nodeMailer from '../../../send-mailer/send-to-mail'
+import { errorFeedBack } from '../../FeedBack'
+import User, { UserSchema } from '../../mongo-models/User'
+import TokenCreator, { Tokens } from '../../token-creator/tokenCreator'
+import { ErrorResponse } from '../../router'
+import nodeMailer from '../../send-mailer/send-to-mail'
 
 class Registration {
   public async registration(req: Request, res: Response): Promise<Response<Tokens | ErrorResponse>> {

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
-import TokenCreator, { Tokens } from '../../../token-creator/tokenCreator'
-import { errorFeedBack, successFeedBack } from '../../../FeedBack'
-import { ErrorResponse } from '../../../router'
+import TokenCreator, { Tokens } from '../../token-creator/tokenCreator'
+import { errorFeedBack, successFeedBack } from '../../FeedBack'
+import { ErrorResponse } from '../../router'
 
 class Logout {
   public async logout(req: Request, res: Response): Promise<Response<ErrorResponse>> {

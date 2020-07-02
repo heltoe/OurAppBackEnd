@@ -13,11 +13,18 @@ export const errorFeedBack = {
     expired: 'Token expired!',
     provided: 'Token not provided!'
   },
+  userData: {
+    empty: 'User Data is empty',
+    exist: 'User Data is exists'
+  },
   connectDb: 'Error connect to DataBase',
   requiredFields: 'Data must be require'
 }
 export const successFeedBack = {
   enterToApp: {
     logout: 'Successfull logout'
+  },
+  common: {
+    status: 'ok'
   }
 }

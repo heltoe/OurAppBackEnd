@@ -1,10 +1,10 @@
 import { Request, Response } from 'express'
 import { ExtractDoc } from 'ts-mongoose'
 import bcrypt from 'bcrypt'
-import { errorFeedBack } from '../../../FeedBack'
-import User, { UserSchema } from '../../../mongo-models/User'
-import TokenCreator, { Tokens } from '../../../token-creator/tokenCreator'
-import { ErrorResponse } from '../../../router'
+import { errorFeedBack } from '../../FeedBack'
+import User, { UserSchema } from '../../mongo-models/User'
+import TokenCreator, { Tokens } from '../../token-creator/tokenCreator'
+import { ErrorResponse } from '../../router'
 
 class Login {
   public async login(req: Request, res: Response): Promise<Response<Tokens | ErrorResponse>> {
@@ -19,11 +19,11 @@ class Login {
         const isValidRePassword: boolean = bcrypt.compareSync(password, isContain.repassword)
         const hash: string = bcrypt.hashSync(password, 10)
         if (!isValidRePassword) throw new Error(errorFeedBack.enterToApp.validPassword)
-        await User.findOneAndUpdate({ email }, { password: hash, repassword: '' })
+        await User.updateOne({ email }, { password: hash, repassword: '' })
       } else {
         const isValidPassword: boolean = bcrypt.compareSync(password, isContain.password)
         if (!isValidPassword) throw new Error(errorFeedBack.enterToApp.validPassword)
-        await User.findOneAndUpdate({ email }, { repassword: '' })
+        await User.updateOne({ email }, { repassword: '' })
       }
       // запись токенов и случай когда выпадет ошибка 1 раз
       let tokens: Tokens | null = await TokenCreator.updateTokens(isContain._id)
