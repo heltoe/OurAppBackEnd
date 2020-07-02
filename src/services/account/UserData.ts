@@ -1,19 +1,8 @@
 import { Request, Response } from 'express'
 import { ExtractDoc } from 'ts-mongoose'
 import { errorFeedBack, successFeedBack } from '../../FeedBack'
-import UserData, { UserDataSchema } from '../../mongo-models/UserData'
+import UserData, { UserDataSchema, DataUser } from '../../mongo-models/UserData'
 import User, { UserSchema } from '../../mongo-models/User'
-
-type DataUser = {
-  firstName: string
-  lastName: string
-  birthDate: string
-  birthPlace: string
-  gender: 'male' | 'female'
-  status: string
-  maritalStatus: number
-  photo: string
-}
 
 class UserInfo {
   public async getUserData(req: Request, res: Response): Promise<Response<string>> {

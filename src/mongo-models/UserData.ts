@@ -2,6 +2,17 @@ import { createSchema, Type, typedModel } from 'ts-mongoose'
 
 const genders = ['male', 'female'] as const
 
+export type DataUser = {
+  firstName: string
+  lastName: string
+  birthDate: string
+  birthPlace: string
+  gender: 'male' | 'female'
+  status: string
+  maritalStatus: number
+  photo: string
+}
+
 export const UserDataSchema = createSchema({
   userId: Type.string({ required: true }), // TODO read-only
   firstName: Type.string({ required: true }),
