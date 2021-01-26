@@ -3,6 +3,8 @@ import { ExtractDoc } from 'ts-mongoose'
 import bcrypt from 'bcrypt'
 import { errorFeedBack } from '../../FeedBack'
 import User, { UserSchema } from '../../mongo-models/User'
+import Friends from '../../mongo-models/Friends'
+import Chats from '../../mongo-models/message/Chats'
 import TokenCreator, { Tokens } from '../../token-creator/tokenCreator'
 import { ErrorResponse } from '../../router'
 import nodeMailer from '../../send-mailer/send-to-mail'
@@ -17,6 +19,10 @@ class Registration {
       if (isContain) throw new Error(errorFeedBack.enterToApp.existUser)
       const hash: string = bcrypt.hashSync(password, 10)
       const user: ExtractDoc<typeof UserSchema> = await User.create({ email, password: hash })
+      // тянем создание пустого массива друзей
+      await Friends.create({ userId: user._id, friends: [] })
+      // тянем создание пустого массива сообщений
+      await Chats.create({ userId: user._id, friends: [] })
       // запись токенов и случай когда выпадет ошибка 1 раз
       let tokens: Tokens | null = await TokenCreator.updateTokens(user._id)
       if (!tokens) {

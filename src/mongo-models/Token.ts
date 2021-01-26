@@ -5,5 +5,5 @@ export const TokenSchema = createSchema({
   userId: Type.string({ required: true }) // TODO read-only
 })
 
-const Token = typedModel('tokens', TokenSchema)
-export default Token
+const token = typedModel('tokens', TokenSchema)
+export default token

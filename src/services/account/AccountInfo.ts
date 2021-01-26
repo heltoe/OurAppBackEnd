@@ -1,25 +1,24 @@
 import { Request, Response } from 'express'
 import { ExtractDoc } from 'ts-mongoose'
 import { errorFeedBack, successFeedBack } from '../../FeedBack'
-import UserData, { UserDataSchema, DataUser } from '../../mongo-models/UserData'
+import UserInfo, { UserInfoSchema, DataUserInfo } from '../../mongo-models/UserInfo'
 import User, { UserSchema } from '../../mongo-models/User'
 
-class UserInfo {
-  public async getUserData(req: Request, res: Response): Promise<Response<string>> {
+class AccountInfo {
+  public async getPersonInfo(req: Request, res: Response): Promise<Response<string>> {
     try {
       const userId: string = req.params.id
-      const userData: ExtractDoc<typeof UserDataSchema> | null = await UserData.findOne({ userId })
-      if (userData) throw new Error(errorFeedBack.userData.empty)
-      return res.status(201).json({ data: userData })
+      const accountInfo: ExtractDoc<typeof UserInfoSchema> | null = await UserInfo.findOne({ userId })
+      if (accountInfo) throw new Error(errorFeedBack.userData.empty)
+      return res.status(201).json({ data: accountInfo })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
   }
-  public async createUserData(req: Request, res: Response): Promise<Response<string>> {
+  public async createPersonInfo(req: Request, res: Response): Promise<Response<string>> {
     try {
-      const userId: string = req.params.id
-      if (!userId.length) throw new Error(errorFeedBack.requiredFields)
       const {
+        userId,
         firstName,
         lastName,
         birthDate,
@@ -28,9 +27,10 @@ class UserInfo {
         status,
         maritalStatus,
         photo 
-      } = req.body as DataUser
+      } = req.body as DataUserInfo
       if (
-        !firstName.length
+        !userId.length
+        || !firstName.length
         || !lastName.length
         || !birthDate.length
         || !birthPlace.length
@@ -41,9 +41,9 @@ class UserInfo {
       ) throw new Error(errorFeedBack.requiredFields)
       const isContain: ExtractDoc<typeof UserSchema> | null = await User.findOne({ _id: userId })
       if (!isContain) throw new Error(errorFeedBack.userData.empty)
-      const userData: ExtractDoc<typeof UserDataSchema> | null = await UserData.findOne({ userId })
-      if (userData) throw new Error(errorFeedBack.userData.exist)
-      await UserData.create({
+      const accountInfo: ExtractDoc<typeof UserInfoSchema> | null = await UserInfo.findOne({ userId })
+      if (accountInfo) throw new Error(errorFeedBack.userData.exist)
+      await UserInfo.create({
         userId,
         firstName,
         lastName,
@@ -59,10 +59,10 @@ class UserInfo {
       return res.status(404).json({ message: e.message })
     }
   }
-  public async updateUserData(req: Request, res: Response): Promise<Response<string>> {
+  public async updatePersonInfo(req: Request, res: Response): Promise<Response<string>> {
     try {
-      const userId: string = req.params.id
       const {
+        userId,
         firstName,
         lastName,
         birthDate,
@@ -71,9 +71,10 @@ class UserInfo {
         status,
         maritalStatus,
         photo 
-      } = req.body as DataUser
+      } = req.body as DataUserInfo
       if (
-        !firstName.length
+        !userId.length
+        || !firstName.length
         || !lastName.length
         || !birthDate.length
         || !birthPlace.length
@@ -84,9 +85,9 @@ class UserInfo {
       ) throw new Error(errorFeedBack.requiredFields)
       const isContain: ExtractDoc<typeof UserSchema> | null = await User.findOne({ _id: userId })
       if (!isContain) throw new Error(errorFeedBack.enterToApp.emptyUser)
-      const userData: ExtractDoc<typeof UserDataSchema> | null = await UserData.findOne({ userId })
-      if (!userData) throw new Error(errorFeedBack.userData.empty)
-      await UserData.updateOne(
+      const accountInfo: ExtractDoc<typeof UserInfoSchema> | null = await UserInfo.findOne({ userId })
+      if (!accountInfo) throw new Error(errorFeedBack.userData.empty)
+      await UserInfo.updateOne(
         { userId },
         {
           firstName,
@@ -104,5 +105,5 @@ class UserInfo {
     }
   }
 }
-const userInfo = new UserInfo()
-export default userInfo
+const accountInfo = new AccountInfo()
+export default accountInfo

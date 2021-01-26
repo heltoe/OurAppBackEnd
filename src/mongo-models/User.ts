@@ -7,5 +7,5 @@ export const UserSchema = createSchema({
   role: Type.string({ default: 'user' })
 })
 
-const User = typedModel('users', UserSchema)
-export default User
+const user = typedModel('users', UserSchema)
+export default user

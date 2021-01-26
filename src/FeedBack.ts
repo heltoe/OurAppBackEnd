@@ -17,6 +17,10 @@ export const errorFeedBack = {
     empty: 'User Data is empty',
     exist: 'User Data is exists'
   },
+  friends: {
+    exist: 'Current friend is exists',
+    empty: 'List friends is empty'
+  },
   connectDb: 'Error connect to DataBase',
   requiredFields: 'Data must be require'
 }
