@@ -1,7 +1,7 @@
 import { createSchema, Type, typedModel } from 'ts-mongoose'
 
 export const ChatMessagesSchema = createSchema({
-  userId: Type.string({ required: true }),
+  userId: Type.number({ required: true, unique: true }),
   chatId: Type.string({ required: true }),
   chatMessages: Type.array().of({
     message: Type.object().of({

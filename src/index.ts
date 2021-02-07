@@ -14,7 +14,7 @@ class Server {
     this.routes()
   }
   private config(): void {
-    // ours plugins
+    // our plugins
     this.app.set('PORT', settings.PORT)
     this.app.use(express.json())
     this.app.use(helmet())

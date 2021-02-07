@@ -3,27 +3,26 @@ import { createSchema, Type, typedModel } from 'ts-mongoose'
 const genders = ['male', 'female'] as const
 
 export type DataUserInfo = {
-  userId: string
+  userId: number
   firstName: string
   lastName: string
-  birthDate: string
-  birthPlace: string
   gender: 'male' | 'female'
+  birthDate: string,
   status: string
-  maritalStatus: number
   photo: string
+  location: string
 }
 
 export const UserInfoSchema = createSchema({
-  userId: Type.string({ required: true }), // TODO read-only
+  userId: Type.number({ required: true, unique: true }), // TODO read-only
   firstName: Type.string({ required: true }),
   lastName: Type.string({ required: true }),
-  birthDate: Type.string({ required: true }),
-  birthPlace: Type.string({ default: '' }),
   gender: Type.string({ required: true, enum: genders }),
+  birthDate: Type.string({ required: true }),
   status: Type.string({ default: '' }),
-  maritalStatus: Type.number({ default: 0 }),
-  photo: Type.string({ default: '' })
+  photo: Type.string({ default: '' }),
+  location: Type.string({ default: '' }),
+  friendShip: Type.array({ default: [] }).of(Type.number({ required: true, unique: true }))
 })
-const userInfo = typedModel('user-data', UserInfoSchema)
+const userInfo = typedModel('user-info', UserInfoSchema)
 export default userInfo

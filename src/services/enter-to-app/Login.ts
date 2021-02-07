@@ -1,8 +1,7 @@
 import { Request, Response } from 'express'
-import { ExtractDoc } from 'ts-mongoose'
 import bcrypt from 'bcrypt'
 import { errorFeedBack } from '../../FeedBack'
-import User, { UserSchema } from '../../mongo-models/User'
+import User from '../../mongo-models/User'
 import TokenCreator, { Tokens } from '../../token-creator/tokenCreator'
 import { ErrorResponse } from '../../router'
 
@@ -12,7 +11,7 @@ class Login {
       const email: string = req.body.email
       const password: string = req.body.password
       if (!email.length || !password.length) throw new Error(errorFeedBack.requiredFields)
-      const isContain: ExtractDoc<typeof UserSchema> | null = await User.findOne({ email })
+      const isContain = await User.findOne({ email })
       if (!isContain) throw new Error(errorFeedBack.enterToApp.validPassword)
       // случай когда был ли введен repassword
       if (isContain.repassword?.length) {
@@ -26,9 +25,9 @@ class Login {
         await User.updateOne({ email }, { repassword: '' })
       }
       // запись токенов и случай когда выпадет ошибка 1 раз
-      let tokens: Tokens | null = await TokenCreator.updateTokens(isContain._id)
+      let tokens: Tokens | null = await TokenCreator.updateTokens(isContain.id)
       if (!tokens) {
-        tokens = await TokenCreator.updateTokens(isContain._id)
+        tokens = await TokenCreator.updateTokens(isContain.id)
         if (!tokens) throw new Error(errorFeedBack.tokens.invalid)
       }
       return res.status(200).json(tokens)

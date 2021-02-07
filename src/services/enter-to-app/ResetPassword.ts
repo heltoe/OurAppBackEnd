@@ -1,8 +1,7 @@
 import { Request, Response } from 'express'
-import { ExtractDoc } from 'ts-mongoose'
 import bcrypt from 'bcrypt'
 import { errorFeedBack } from '../../FeedBack'
-import User, { UserSchema } from '../../mongo-models/User'
+import User from '../../mongo-models/User'
 import nodeMailer from '../../send-mailer/send-to-mail'
 
 class ResetPassword {
@@ -12,7 +11,7 @@ class ResetPassword {
       const password: string = req.body.password
       if (!email.length || !password.length) throw new Error(errorFeedBack.requiredFields)
       const hash: string = bcrypt.hashSync(password, 10)
-      const isContain: ExtractDoc<typeof UserSchema> | null = await User.findOneAndUpdate({ email }, { repassword: hash })
+      const isContain = await User.findOneAndUpdate({ email }, { repassword: hash })
       if (!isContain) throw new Error(errorFeedBack.enterToApp.emptyUser)
       const template = {
         title: 'Our App',

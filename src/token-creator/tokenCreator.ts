@@ -3,12 +3,14 @@ import jwt from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid'
 import settings from "../settings"
 import Token from '../mongo-models/Token'
+import User from '../mongo-models/User'
+import UserInfo from '../mongo-models/UserInfo'
 import { errorFeedBack } from '../FeedBack'
 import { ErrorResponse } from '../router'
 
 export type Token = {
   id?: string
-  userId?: string
+  userId?: number
   type: string
 }
 export type Tokens = {
@@ -21,7 +23,7 @@ export type RefreshToken = {
 }
 
 class TokenCreator {
-  public generateAccessToken(userId: string): string {
+  public generateAccessToken(userId: number): string {
     const payload: Token = {
       userId,
       type: settings.JWT.access.type
@@ -40,7 +42,7 @@ class TokenCreator {
       token: jwt.sign(payload, settings.JWT.secret, options)
     }
   }
-  public async updateTokens(userId: string): Promise<Tokens | null> {
+  public async updateTokens(userId: number): Promise<Tokens | null> {
     try {
       const accessToken: string = this.generateAccessToken(userId)
       const refreshToken: RefreshToken = this.generateRefreshToken()
@@ -54,7 +56,7 @@ class TokenCreator {
       return null
     }
   }
-  public async replaceDbRefreshToken(tokenId: string, userId: string): Promise<void> {
+  public async replaceDbRefreshToken(tokenId: string, userId: number): Promise<void> {
     try {
       this.removeToken(userId)
       await Token.create({ tokenId, userId })
@@ -62,11 +64,34 @@ class TokenCreator {
       console.log('replaceDbRefreshToken', e)
     }
   }
-  public async removeToken(userId: string): Promise<void> {
+  public async removeToken(userId: number): Promise<void> {
     try {
       await Token.findOneAndDelete({ userId })
     } catch(e) {
       console.log('removeToken', e)
+    }
+  }
+  public async getUserIdByToken(req: Request, res: Response) {
+    try {
+      const token: string = req.body.token
+      if (!token && !token.length) throw new Error(errorFeedBack.requiredFields)
+      const payload = await jwt.verify(req.body.token, settings.JWT.secret) as Token
+      const user = await User.findOne({ id: payload.userId })
+      const userInfo = await UserInfo.findOne({ userId: payload.userId })
+      if (!user || !userInfo) throw new Error(errorFeedBack.enterToApp.validPassword)
+      return res.status(200).json({
+        id: payload.userId,
+        email: user.email,
+        firstName: userInfo.firstName,
+        lastName: userInfo.lastName,
+        birthDate: userInfo.birthDate,
+        gender: userInfo.gender,
+        role: user.role,
+        location: userInfo.location,
+        photo: userInfo.photo
+      })
+    } catch(e) {
+      return res.status(401).json({ message: e.message })
     }
   }
   public async refreshTokens(req: Request, res: Response): Promise<Response<Tokens | ErrorResponse>> {
