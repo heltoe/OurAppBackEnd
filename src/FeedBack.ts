@@ -17,6 +17,10 @@ export const errorFeedBack = {
     empty: 'User Data is empty',
     exist: 'User Data is exists'
   },
+  friendship: {
+    empty: 'List friendship is empty',
+    exist: 'Current friendship is exists'
+  },
   friends: {
     empty: 'List friends is empty',
     exist: 'Current friend is exists'

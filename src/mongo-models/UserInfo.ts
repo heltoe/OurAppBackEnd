@@ -22,7 +22,6 @@ export const UserInfoSchema = createSchema({
   status: Type.string({ default: '' }),
   photo: Type.string({ default: '' }),
   location: Type.string({ default: '' }),
-  friendShip: Type.array({ default: [] }).of(Type.number({ required: true, unique: true }))
 })
 const userInfo = typedModel('user-info', UserInfoSchema)
 export default userInfo

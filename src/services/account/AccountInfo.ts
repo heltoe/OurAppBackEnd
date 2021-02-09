@@ -6,11 +6,12 @@ import UserInfo, { DataUserInfo } from '../../mongo-models/UserInfo'
 import User from '../../mongo-models/User'
 import Chats from '../../mongo-models/message/Chats'
 import Friends from '../../mongo-models/Friends'
+import FriendShip from '../../mongo-models/FriendShip'
 import Token from '../../mongo-models/Token'
 
 type RemoveAccountTypeParams = {
   token: string
-  id: string
+  userId: number
 }
 class AccountInfo {
   public async getPersonInfo(req: Request, res: Response): Promise<Response<string>> {
@@ -97,13 +98,14 @@ class AccountInfo {
   }
   public async removeAccount(req: Request, res: Response) {
     try {
-      const { token, id } = req.body as RemoveAccountTypeParams
-      if (!token && !token.length && !id) throw new Error(errorFeedBack.requiredFields)
+      const { token, userId } = req.body as RemoveAccountTypeParams
+      if (!token && !token.length && !userId) throw new Error(errorFeedBack.requiredFields)
       const payload = await jwt.verify(token, settings.JWT.secret) as any
-      if (payload.userId === id) {
-        await User.findOneAndRemove({ id })
-        await Friends.findOneAndRemove({ id })
-        await Chats.findOneAndRemove({ id })
+      if (payload.userId === userId) {
+        await User.findOneAndRemove({ userId })
+        await Friends.findOneAndRemove({ userId })
+        await Chats.findOneAndRemove({ userId })
+        await FriendShip.findOneAndRemove({ userId })
       }
       return res.status(200).json({ status: 'ok' })
     } catch(e) {

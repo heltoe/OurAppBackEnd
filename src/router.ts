@@ -30,13 +30,16 @@ class Routes {
     this.router.get('/api/user-data/:id', AccountInfo.getPersonInfo)
     this.router.post('/api/create-user-data', AccountInfo.createPersonInfo)
     this.router.put('/api/update-user-data', AccountInfo.updatePersonInfo)
-    this.router.post('/api/remove-account', AccountInfo.removeAccount)
+    this.router.delete('/api/remove-account', AccountInfo.removeAccount)
+    // person friendShip
+    this.router.get('/api/list-friendship/:id', AccountFriends.getFriendShipList)
+    this.router.put('/api/add-to-friendship', AccountFriends.addToFriendShip)
+    this.router.delete('/api/remove-from-friendship', AccountFriends.removeFromFriendShip)
     // person friends
     this.router.get('/api/user-list/:id', AccountFriends.getUserList)
     this.router.get('/api/user-friends/:id', AccountFriends.getFriends)
-    this.router.get('/api/user-friendship/:id', AccountFriends.getFriendShipList)
-    this.router.post('/api/add-user-friend', AccountFriends.createFriend)
-    this.router.delete('/api/remove-user-friend', AccountFriends.removeFriend)
+    this.router.put('/api/add-to-friend', AccountFriends.createFriend)
+    this.router.delete('/api/remove-from-friend', AccountFriends.removeFriend)
     // person chat
     this.router.get('/api/list-chat/:id', AccountChat.getListChat)
   }

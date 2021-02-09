@@ -6,6 +6,7 @@ import { errorFeedBack } from '../../FeedBack'
 import User from '../../mongo-models/User'
 import Friends from '../../mongo-models/Friends'
 import Chats from '../../mongo-models/message/Chats'
+import FriendShip from '../../mongo-models/FriendShip'
 import TokenCreator, { Tokens } from '../../token-creator/tokenCreator'
 import { ErrorResponse } from '../../router'
 import UserInfo from '../../mongo-models/UserInfo'
@@ -56,6 +57,8 @@ class Registration {
       await Friends.create({ userId: user.id, friends: [] })
       // тянем создание пустого массива сообщений
       await Chats.create({ userId: user.id, messages: [] })
+      // Тянем создание пустого массива заявок в друзья
+      await FriendShip.create({ userId: user.id, friendShip: [] })
       // запись токенов и случай когда выпадет ошибка 1 раз
       let tokens: Tokens | null = await TokenCreator.updateTokens(user.id)
       if (!tokens) {
