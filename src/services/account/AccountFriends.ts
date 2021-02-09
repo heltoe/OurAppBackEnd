@@ -8,17 +8,20 @@ import { errorFeedBack, successFeedBack } from '../../FeedBack'
 class AccountFriends {
   public async getUserList(req: Request, res: Response) {
     try {
-      const userId: string = req.params.userId
+      const userId: string = req.params.id
       if (!userId && !userId.length) throw new Error(errorFeedBack.requiredFields)
       const usersInfo = await UserInfo.find()
       if (!usersInfo) throw new Error(errorFeedBack.enterToApp.validPassword)
+      const friendShipUser = await FriendShip.findOne({ userId: parseInt(userId) })
+      if (!friendShipUser) throw new Error(errorFeedBack.userData.empty)
       const parsedUsers = usersInfo.filter(item => item.userId !== parseInt(userId)).map(item => ({
         id: item.userId,
         firstName: item.firstName,
         lastName: item.lastName,
         image: item.photo,
         gender: item.gender,
-        birthDate: item.birthDate
+        birthDate: item.birthDate,
+        calledToFriendShip: friendShipUser.friendShip!.length > 0 && friendShipUser.friendShip!.findIndex(friendShipItem => friendShipItem === item.userId) > -1
       }))
       return res.status(200).json({ users: parsedUsers })
     } catch(e) {
@@ -27,15 +30,15 @@ class AccountFriends {
   }
   public async getFriends(req: Request, res: Response) {
     try {
-      const userId: string = req.params.userId
+      const userId: string = req.params.id
       if (!userId && !userId.length) throw new Error(errorFeedBack.requiredFields)
       const accountFriends = await Friends.findOne({ userId: parseInt(userId) })
       if (!accountFriends) throw new Error(errorFeedBack.userData.empty)
       let friends: ExtractDoc<typeof UserInfoSchema>[] = []
       // вытягиваем актуальную информацию об аккаунтах по их id
-      if (accountFriends.friends.length) {
+      if (accountFriends.friends!.length) {
         const requests: any = []
-        accountFriends.friends.forEach(idFriend => {
+        accountFriends.friends!.forEach(idFriend => {
           requests.push(UserInfo.findOne({ userId: idFriend }))
         })
         friends = await Promise.all(requests)
@@ -57,7 +60,7 @@ class AccountFriends {
   }
   public async getFriendShipList(req: Request, res: Response) {
     try {
-      const userId: string = req.params.userId
+      const userId: string = req.params.id
       if (!userId && !userId.length) throw new Error(errorFeedBack.requiredFields)
       const friendShipUser = await FriendShip.findOne({ userId: parseInt(userId) })
       if (!friendShipUser) throw new Error(errorFeedBack.userData.empty)
@@ -91,9 +94,9 @@ class AccountFriends {
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       const friendShipUser = await FriendShip.findOne({ userId })
       if (!friendShipUser) throw new Error(errorFeedBack.userData.empty)
-      const id: number = friendShipUser.friendShip.findIndex((item: number): boolean => item === friendId)
+      const id: number = friendShipUser.friendShip!.findIndex((item: number): boolean => item === friendId)
       if (id !== -1) throw new Error(errorFeedBack.friendship.exist)
-      await FriendShip.updateOne({ userId }, { friends: [...friendShipUser.friendShip, friendId] })
+      await FriendShip.updateOne({ userId }, { friendShip: [...friendShipUser.friendShip!, friendId] })
       return res.status(201).json({ data: successFeedBack.common.status })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -105,9 +108,9 @@ class AccountFriends {
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       const friendShipUser = await FriendShip.findOne({ userId })
       if (!friendShipUser) throw new Error(errorFeedBack.userData.empty)
-      const id: number = friendShipUser.friendShip.findIndex((item: number): boolean => item === friendId)
+      const id: number = friendShipUser.friendShip!.findIndex((item: number): boolean => item === friendId)
       if (id > -1) throw new Error(errorFeedBack.friendship.exist)
-      await FriendShip.updateOne({ userId }, { friendShip: friendShipUser.friendShip.filter(item => item !== friendId) })
+      await FriendShip.updateOne({ userId }, { friendShip: friendShipUser.friendShip!.filter(item => item !== friendId) })
       return res.status(201).json({ data: successFeedBack.common.status })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -119,9 +122,9 @@ class AccountFriends {
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       const accountFriends = await Friends.findOne({ userId })
       if (!accountFriends) throw new Error(errorFeedBack.userData.empty)
-      const id: number = accountFriends.friends.findIndex((item: number): boolean => item === friendId)
+      const id: number = accountFriends.friends!.findIndex((item: number): boolean => item === friendId)
       if (id !== -1) throw new Error(errorFeedBack.friends.exist)
-      await Friends.updateOne({ userId }, { friends: [...accountFriends.friends, friendId] })
+      await Friends.updateOne({ userId }, { friends: [...accountFriends.friends!, friendId] })
       return res.status(201).json({ data: successFeedBack.common.status })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -133,8 +136,8 @@ class AccountFriends {
       if (userId || !friendId) throw new Error(errorFeedBack.userData.empty)
       const accountFriends = await Friends.findOne({ userId })
       if (!accountFriends) throw new Error(errorFeedBack.userData.empty)
-      if (!accountFriends.friends.length) throw new Error(errorFeedBack.friends.empty)
-      await Friends.updateOne({ userId }, { friends: accountFriends.friends.filter(item => item !== friendId) })
+      if (!accountFriends.friends!.length) throw new Error(errorFeedBack.friends.empty)
+      await Friends.updateOne({ userId }, { friends: accountFriends.friends!.filter(item => item !== friendId) })
       return res.status(201).json({ data: successFeedBack.common.status })
     } catch(e) {
       return res.status(404).json({ message: e.message })
