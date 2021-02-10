@@ -13,7 +13,8 @@ class AccountFriends {
       const usersInfo = await UserInfo.find()
       if (!usersInfo) throw new Error(errorFeedBack.enterToApp.validPassword)
       const friendShipUser = await FriendShip.findOne({ userId: parseInt(userId) })
-      if (!friendShipUser) throw new Error(errorFeedBack.userData.empty)
+      const friendsUser = await Friends.findOne({ userId: parseInt(userId) })
+      if (!friendShipUser || !friendsUser) throw new Error(errorFeedBack.userData.empty)
       const parsedUsers = usersInfo.filter(item => item.userId !== parseInt(userId)).map(item => ({
         id: item.userId,
         firstName: item.firstName,
@@ -21,7 +22,9 @@ class AccountFriends {
         image: item.photo,
         gender: item.gender,
         birthDate: item.birthDate,
-        calledToFriendShip: friendShipUser.friendShip!.length > 0 && friendShipUser.friendShip!.findIndex(friendShipItem => friendShipItem === item.userId) > -1
+        calledToFriendShip: friendShipUser.friendShip!.length > 0
+          && friendShipUser.friendShip!.findIndex(friendShipItem => friendShipItem === item.userId) > -1
+          && friendsUser.friends!.findIndex(friendsItem => friendsItem === item.userId) > -1
       }))
       return res.status(200).json({ users: parsedUsers })
     } catch(e) {
@@ -132,7 +135,7 @@ class AccountFriends {
   async addItemToFirendShip(userId: number, friendId: number) {
     try {
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
-      const friendShipUser = await FriendShip.findOne({ userId: userId })
+      const friendShipUser = await FriendShip.findOne({ userId })
       const friendShipNewFriend = await FriendShip.findOne({ userId: friendId })
       if (!friendShipUser || !friendShipNewFriend) throw new Error(errorFeedBack.userData.empty)
       const id: number = friendShipUser.friendShip!.findIndex((item: number): boolean => item === friendId)
@@ -168,7 +171,7 @@ class AccountFriends {
       if (!accountFriends || !accountNewFriendFriends) throw new Error(errorFeedBack.userData.empty)
       const id: number = accountFriends.friends!.findIndex((item): boolean => item === friendId)
       const idNewFriend: number = accountNewFriendFriends.friends!.findIndex((item): boolean => item === userId)
-      if (id !== -1) throw new Error(errorFeedBack.friends.exist)
+      if (id !== -1 || idNewFriend !== -1) throw new Error(errorFeedBack.friends.exist)
       await Friends.updateOne({ userId }, { friends: [...accountFriends.friends!, friendId] })
       await Friends.updateOne({ userId: friendId }, { friends: [...accountNewFriendFriends.friends!, userId] })
     } catch(e) {
@@ -177,15 +180,17 @@ class AccountFriends {
   }
   async removeItemFromFriend(userId: number, friendId: number) {
     try {
-      if (userId || !friendId) throw new Error(errorFeedBack.userData.empty)
+      if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       const accountFriends = await Friends.findOne({ userId })
       const exFriendFriends = await Friends.findOne({ userId: friendId })
       if (!accountFriends || !exFriendFriends) throw new Error(errorFeedBack.userData.empty)
       const id: number = accountFriends.friends!.findIndex((item): boolean => item === friendId)
       const idExFriend: number = exFriendFriends.friends!.findIndex((item): boolean => item === userId)
       if (id === -1 || idExFriend === -1) throw new Error(errorFeedBack.friends.empty)
-      await Friends.updateOne({ userId }, { friends: accountFriends.friends!.filter(item => item !== friendId) })
-      await Friends.updateOne({ userId: friendId }, { friends: exFriendFriends.friends!.filter(item => item !== userId) })
+      const friendsListUser = accountFriends.friends!.filter(item => item !== friendId)
+      const friendsListExFriendUser = exFriendFriends.friends!.filter(item => item !== userId)
+      await Friends.updateOne({ userId }, { friends: friendsListUser.length ? friendsListUser : [] })
+      await Friends.updateOne({ userId: friendId }, { friends: friendsListExFriendUser.length ? friendsListExFriendUser : [] })
     } catch(e) {
       throw new Error(e.message)
     }
