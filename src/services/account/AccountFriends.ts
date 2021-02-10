@@ -22,9 +22,8 @@ class AccountFriends {
         image: item.photo,
         gender: item.gender,
         birthDate: item.birthDate,
-        calledToFriendShip: friendShipUser.friendShip!.length > 0
-          && friendShipUser.friendShip!.findIndex(friendShipItem => friendShipItem === item.userId) > -1
-          && friendsUser.friends!.findIndex(friendsItem => friendsItem === item.userId) > -1
+        existInFriendList: friendShipUser.sendedFriendShip!.findIndex(friendShipItem => friendShipItem === item.userId) > -1
+          || friendsUser.friends!.findIndex(friendsItem => friendsItem === item.userId) > -1
       }))
       return res.status(200).json({ users: parsedUsers })
     } catch(e) {
@@ -95,7 +94,7 @@ class AccountFriends {
     try {
       const { userId, friendId } = req.body
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
-      await this.addItemToFirendShip(userId, friendId)
+      await this.addItemToFriendShip(userId, friendId)
       return res.status(201).json({ data: successFeedBack.common.status })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -132,18 +131,17 @@ class AccountFriends {
     }
   }
   //
-  async addItemToFirendShip(userId: number, friendId: number) {
+  async addItemToFriendShip(userId: number, friendId: number) {
     try {
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
-      const friendShipUser = await FriendShip.findOne({ userId })
-      const friendShipNewFriend = await FriendShip.findOne({ userId: friendId })
-      if (!friendShipUser || !friendShipNewFriend) throw new Error(errorFeedBack.userData.empty)
-      const id: number = friendShipUser.friendShip!.findIndex((item: number): boolean => item === friendId)
-      const idNewFriend: number = friendShipNewFriend.friendShip!.findIndex((item: number): boolean => item === userId)
-      if (id !== -1 || idNewFriend !== -1) throw new Error(errorFeedBack.friendship.exist)
-      await FriendShip.updateOne({ userId }, { friendShip: [...friendShipUser.friendShip!, friendId] })
+      const friendShipPerson = await FriendShip.findOne({ userId })
+      const friendShipUser = await FriendShip.findOne({ userId: friendId })
+      if (!friendShipPerson || !friendShipUser) throw new Error(errorFeedBack.userData.empty)
+      const idFriendShipPerson = friendShipPerson.sendedFriendShip!.findIndex((item: number): boolean => item === friendId)
+      const idFriendShip = friendShipUser.friendShip!.findIndex((item: number): boolean => item === userId)
+      if (idFriendShipPerson !== -1 || idFriendShip !== -1) throw new Error(errorFeedBack.friendship.exist)
+      await FriendShip.updateOne({ userId }, { sendedFriendShip: [...friendShipPerson.sendedFriendShip!, friendId] })
       await FriendShip.updateOne({ userId: friendId }, { friendShip: [...friendShipUser.friendShip!, userId] })
-      const test = await FriendShip.findOne({ userId })
     } catch(e) {
       throw new Error(e.message)
     }
@@ -151,14 +149,14 @@ class AccountFriends {
   async removeItemFromFirendShip(userId: number, friendId: number) {
     try {
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
-      const accountFriendShip = await FriendShip.findOne({ userId })
-      const exFriendShip = await FriendShip.findOne({ userId: friendId })
-      if (!accountFriendShip || !exFriendShip) throw new Error(errorFeedBack.friendship.empty)
-      const idFriendShip: number = accountFriendShip.friendShip!.findIndex((item: number): boolean => item === friendId)
-      const idExFriendShip: number = exFriendShip.friendShip!.findIndex((item: number): boolean => item === userId)
-      if (idFriendShip === -1 || idExFriendShip === -1) throw new Error(errorFeedBack.friendship.empty)
-      await FriendShip.updateOne({ userId }, { friendShip: accountFriendShip.friendShip!.filter(item => item !== friendId) })
-      await FriendShip.updateOne({ userId: friendId }, { friendShip: exFriendShip.friendShip!.filter(item => item !== userId) })
+      const friendShipPerson = await FriendShip.findOne({ userId })
+      const friendShipUser = await FriendShip.findOne({ userId: friendId })
+      if (!friendShipPerson || !friendShipUser) throw new Error(errorFeedBack.friendship.empty)
+      const idFriendShipPerson: number = friendShipPerson.friendShip!.findIndex((item: number): boolean => item === friendId)
+      const idFriendShip: number = friendShipUser.sendedFriendShip!.findIndex((item: number): boolean => item === userId)
+      if (idFriendShipPerson === -1 || idFriendShip === -1) throw new Error(errorFeedBack.friendship.empty)
+      await FriendShip.updateOne({ userId }, { friendShip: friendShipPerson.friendShip!.filter(item => item !== friendId) })
+      await FriendShip.updateOne({ userId: friendId }, { sendedFriendShip: friendShipUser.sendedFriendShip!.filter(item => item !== userId) })
     } catch(e) {
       throw new Error(e.message)
     }
