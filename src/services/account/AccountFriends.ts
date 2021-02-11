@@ -9,8 +9,11 @@ class AccountFriends {
   public async getUserList(req: Request, res: Response) {
     try {
       const userId: string = req.params.id
+      const { page, limit } = req.query as { page: string | null, limit: string | null }
       if (!userId && !userId.length) throw new Error(errorFeedBack.requiredFields)
-      const usersInfo = await UserInfo.find()
+      const usersInfo = limit && page && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(page))
+        ? await UserInfo.find().limit(parseInt(limit)).skip(parseInt(limit) * (parseInt(page) - 1))
+        : await UserInfo.find()
       if (!usersInfo) throw new Error(errorFeedBack.enterToApp.validPassword)
       const friendShipUser = await FriendShip.findOne({ userId: parseInt(userId) })
       const friendsUser = await Friends.findOne({ userId: parseInt(userId) })
