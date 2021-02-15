@@ -14,6 +14,7 @@ class AccountFriends {
       const usersInfo = limit && page && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(page))
         ? await UserInfo.find().limit(parseInt(limit)).skip(parseInt(limit) * (parseInt(page) - 1))
         : await UserInfo.find()
+      const count = await UserInfo.countDocuments({})
       if (!usersInfo) throw new Error(errorFeedBack.enterToApp.validPassword)
       const friendShipUser = await FriendShip.findOne({ userId: parseInt(userId) })
       const friendsUser = await Friends.findOne({ userId: parseInt(userId) })
@@ -28,7 +29,11 @@ class AccountFriends {
         existInFriendList: friendShipUser.sendedFriendShip!.findIndex(friendShipItem => friendShipItem === item.userId) > -1
           || friendsUser.friends!.findIndex(friendsItem => friendsItem === item.userId) > -1
       }))
-      return res.status(200).json({ users: parsedUsers })
+      return res.status(200).json({
+        count,
+        next: limit && page && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(page)) ? parseInt(limit) * parseInt(page) < count : false,
+        results: parsedUsers
+      })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -36,8 +41,12 @@ class AccountFriends {
   public async getFriends(req: Request, res: Response) {
     try {
       const userId: string = req.params.id
+      const { page, limit } = req.query as { page: string | null, limit: string | null }
       if (!userId && !userId.length) throw new Error(errorFeedBack.requiredFields)
-      const accountFriends = await Friends.findOne({ userId: parseInt(userId) })
+      const accountFriends = limit && page && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(page))
+        ? await Friends.findOne({ userId: parseInt(userId) }).limit(parseInt(limit)).skip(parseInt(limit) * (parseInt(page) - 1))
+        : await Friends.findOne({ userId: parseInt(userId) })
+      const count = await Friends.countDocuments({ userId: parseInt(userId) })
       if (!accountFriends) throw new Error(errorFeedBack.userData.empty)
       let friends: ExtractDoc<typeof UserInfoSchema>[] = []
       // вытягиваем актуальную информацию об аккаунтах по их id
@@ -58,7 +67,11 @@ class AccountFriends {
         location: item.location,
         status: item.status,
       }))
-      return res.status(200).json({ friends: parsedFriends })
+      return res.status(200).json({
+        count,
+        next: limit && page && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(page)) ? parseInt(limit) * parseInt(page) < count : false,
+        results: parsedFriends
+      })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -66,8 +79,12 @@ class AccountFriends {
   public async getFriendShipList(req: Request, res: Response) {
     try {
       const userId: string = req.params.id
+      const { page, limit } = req.query as { page: string | null, limit: string | null }
       if (!userId && !userId.length) throw new Error(errorFeedBack.requiredFields)
-      const friendShipUser = await FriendShip.findOne({ userId: parseInt(userId) })
+      const friendShipUser = limit && page && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(page))
+        ? await FriendShip.findOne({ userId: parseInt(userId) }).limit(parseInt(limit)).skip(parseInt(limit) * (parseInt(page) - 1))
+        : await FriendShip.findOne({ userId: parseInt(userId) })
+      const count = await FriendShip.countDocuments({ userId: parseInt(userId) })
       if (!friendShipUser) throw new Error(errorFeedBack.userData.empty)
       let friendShipList: ExtractDoc<typeof UserInfoSchema>[] = []
       // вытягиваем актуальную информацию об аккаунтах по их id
@@ -88,7 +105,11 @@ class AccountFriends {
         location: item.location,
         status: item.status,
       }))
-      return res.status(200).json({ users: parsedFriendShipList })
+      return res.status(200).json({
+        count,
+        next: limit && page && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(page)) ? parseInt(limit) * parseInt(page) < count : false,
+        results: parsedFriendShipList
+      })
     } catch (e) {
       return res.status(404).json({ message: e.message })
     }
