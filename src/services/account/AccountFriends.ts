@@ -119,7 +119,7 @@ class AccountFriends {
       const { userId, friendId } = req.body
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       await this.addItemToFriendShip(userId, friendId)
-      return res.status(201).json({ data: successFeedBack.common.status })
+      return res.status(201).json({ result: friendId })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -128,7 +128,7 @@ class AccountFriends {
     try {
       const { userId, friendId } = req.body
       await this.removeItemFromFirendShip(userId, friendId)
-      return res.status(201).json({ data: successFeedBack.common.status })
+      return res.status(201).json({ result: friendId })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -139,7 +139,7 @@ class AccountFriends {
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       await this.removeItemFromFirendShip(userId, friendId)
       await this.addItemToFriend(userId, friendId)
-      return res.status(201).json({ data: successFeedBack.common.status })
+      return res.status(201).json({ result: friendId })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -149,7 +149,7 @@ class AccountFriends {
       const { userId, friendId } = req.body
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       await this.removeItemFromFriend(userId, friendId)
-      return res.status(201).json({ data: successFeedBack.common.status })
+      return res.status(201).json({ result: friendId })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -165,7 +165,7 @@ class AccountFriends {
       const idFriendShip = friendShipUser.friendShip!.findIndex((item: number): boolean => item === userId)
       if (idFriendShipPerson !== -1 || idFriendShip !== -1) throw new Error(errorFeedBack.friendship.exist)
       await FriendShip.updateOne({ userId }, { sendedFriendShip: [...friendShipPerson.sendedFriendShip!, friendId] })
-      await FriendShip.updateOne({ userId: friendId }, { friendShip: [...friendShipUser.friendShip!, userId] })
+      const item = await FriendShip.updateOne({ userId: friendId }, { friendShip: [...friendShipUser.friendShip!, userId] })
     } catch(e) {
       throw new Error(e.message)
     }
