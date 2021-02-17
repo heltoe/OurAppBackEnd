@@ -119,7 +119,7 @@ class AccountFriends {
       const { userId, friendId } = req.body
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       await this.addItemToFriendShip(userId, friendId)
-      return res.status(201).json({ result: friendId })
+      return res.status(201).json({ userId: friendId })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -128,7 +128,7 @@ class AccountFriends {
     try {
       const { userId, friendId } = req.body
       await this.removeItemFromFirendShip(userId, friendId)
-      return res.status(201).json({ result: friendId })
+      return res.status(201).json({ userId: friendId })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -139,7 +139,7 @@ class AccountFriends {
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       await this.removeItemFromFirendShip(userId, friendId)
       await this.addItemToFriend(userId, friendId)
-      return res.status(201).json({ result: friendId })
+      return res.status(201).json({ userId: friendId })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -149,7 +149,7 @@ class AccountFriends {
       const { userId, friendId } = req.body
       if (!userId || !friendId) throw new Error(errorFeedBack.requiredFields)
       await this.removeItemFromFriend(userId, friendId)
-      return res.status(201).json({ result: friendId })
+      return res.status(201).json({ userId: friendId })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
