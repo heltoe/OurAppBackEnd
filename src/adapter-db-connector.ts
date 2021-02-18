@@ -1,27 +1,24 @@
-import mongoose from 'mongoose'
-import settings from './settings'
+import Pool from 'pg'
 
 class AdapterDB {
-  private dbName: string
-  public db: any
+  private db: any
   constructor() {
-    this.dbName = ''
-  }
-  public setDbName(name: string) {
-    this.dbName = name
+    this.db = null
   }
   public connect() {
-    return this.dbName === 'mongodb' ? this.connectToMongoDB() : this.coonnectAnotherDB()
-  }
-  private connectToMongoDB() {
-    return mongoose.connect(settings.MONGO_URI, {
-      useCreateIndex: true,
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+    this.db = new Pool.Pool({
+      user: 'admin',
+      password: 'admin',
+      database: 'chatApi',
+      host: 'localhost',
+      port: 5432
     })
   }
-  private coonnectAnotherDB() {}
+  public getDb() {
+    return this.db
+  }
 }
 
 const adapterDBConnector = new AdapterDB()
+export const db = adapterDBConnector.getDb()
 export default adapterDBConnector

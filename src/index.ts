@@ -28,7 +28,6 @@ class Server {
   }
   public async init() {
     try {
-      adapterDBConnector.setDbName(settings.DBNAME)
       await adapterDBConnector.connect()
       this.startServer()
     } catch(e) {

@@ -17,8 +17,8 @@
     "generate-unique-id": "^2.0.1",
     "helmet": "^3.22.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.9.17",
     "nodemailer": "^6.4.8",
+    "pg": "^8.5.1",
     "uuid": "^8.1.0",
     "xss": "^1.0.6"
   },
@@ -28,12 +28,11 @@
     "@types/express": "^4.17.6",
     "@types/helmet": "0.0.47",
     "@types/jsonwebtoken": "^8.5.0",
-    "@types/mongoose": "^5.7.22",
     "@types/node": "^14.0.11",
     "@types/nodemailer": "^6.4.0",
+    "@types/pg": "^7.14.10",
     "@types/uuid": "^8.0.0",
     "nodemon": "^2.0.4",
-    "ts-mongoose": "0.0.21",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.5"
   }
