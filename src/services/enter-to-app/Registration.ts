@@ -1,73 +1,59 @@
 import { Request, Response } from 'express'
-// @ts-ignore
-import generateUniqueId from 'generate-unique-id'
 import bcrypt from 'bcrypt'
 import { errorFeedBack } from '../../FeedBack'
-import Chats from '../../mongo-models/message/Chats'
+import { usersTable, usersInfoTable } from '../../mongo-models/Tables'
 import TokenCreator, { Tokens } from '../../token-creator/tokenCreator'
-import { ErrorResponse } from '../../router'
-import { CommonEssence } from '../../mongo-models/CommonEssence'
-import adapterDBConnector from '../../adapter-db-connector'
 
 const template = {
   title: 'Our App',
   body: 'Thank you for registration in Our App'
 }
 class Registration {
-  // Promise<Response<Tokens | ErrorResponse>>
   public async registration(req: Request, res: Response) {
     try {
       const email: string = req.body.email
       const password: string = req.body.password
-      const firstName: string = req.body.firstName
-      const lastName: string = req.body.lastName
+      const first_name: string = req.body.first_name
+      const last_name: string = req.body.last_name
       const gender: string = req.body.gender
-      const birthDate: string = req.body.birthDate
+      const birth_date: string = req.body.birth_date
+      const phone: string = req.body.phone
       if (
         !email ||
-        !email.length
-        // !password ||
-        // !password.length
-        // !firstName ||
-        // !firstName.length ||
-        // !lastName ||
-        // !lastName.length ||
-        // !gender ||
-        // !gender.length ||
-        // !birthDate ||
-        // !birthDate.length
+        !email.length ||
+        !password ||
+        !password.length ||
+        !first_name ||
+        !first_name.length ||
+        !last_name ||
+        !last_name.length ||
+        !gender ||
+        !gender.length ||
+        !birth_date ||
+        !birth_date.length ||
+        !phone ||
+        !phone.length
       ) throw new Error(errorFeedBack.requiredFields)
-      const registrationModel = new CommonEssence('users')
-      // const hash: string = bcrypt.hashSync(password, 10)
-      const user = await adapterDBConnector.getDb().query(`INSERT INTO users (id, email) values ($1, $2) RETURNING *`, [generateUniqueId({ length: 20, useLetters: false, useNumbers: true }), email, ''])
-      // const user = await registrationModel.createEssence({
-      //   id: generateUniqueId({ length: 20, useLetters: false, useNumbers: true }),
-      //   email,
-      //   // password: hash,
-      //   repassword: ''
-      // })
-      // await UserInfo.create({
-      //   userId: user.id,
-      //   firstName,
-      //   lastName,
-      //   birthDate,
-      //   gender
-      // })
-      // тянем создание пустого массива друзей
-      // await Friends.create({ userId: user.id, friends: [] })
-      // тянем создание пустого массива сообщений
-      // await Chats.create({ userId: user.id, messages: [] })
-      // Тянем создание пустого массива заявок в друзья
-      // await FriendShip.create({ userId: user.id, friendShip: [] })
+      const hash: string = bcrypt.hashSync(password, 10)
+      const user = await usersTable.createEssence({
+        email,
+        password: hash,
+        repassword: '',
+        role: 'user'
+      })
+      await usersInfoTable.createEssence({
+        user_id: user.id,
+        first_name,
+        last_name,
+        gender,
+        birth_date,
+        phone
+      })
+      const tokens: Tokens | null = await TokenCreator.updateTokens(user.id)
       // запись токенов и случай когда выпадет ошибка 1 раз
-      // let tokens: Tokens | null = await TokenCreator.updateTokens(user.id)
-      // if (!tokens) {
-      //   tokens = await TokenCreator.updateTokens(user.id)
-      //   if (!tokens) throw new Error(errorFeedBack.tokens.invalid)
-      // }
+      if (!tokens) throw new Error(errorFeedBack.tokens.invalid)
       // await nodeMailer.sendTo(email, template)
-      // return res.status(201).json(tokens)
-      return res.status(201).json(user)
+      return res.status(201).json(tokens)
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }

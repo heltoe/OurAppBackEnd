@@ -28,7 +28,6 @@ class Routes {
     // person info
     this.router.post('/api/personal-info', Token.getUserIdByToken)
     this.router.get('/api/user-data/:id', AccountInfo.getPersonInfo)
-    this.router.post('/api/create-user-data', AccountInfo.createPersonInfo)
     this.router.put('/api/update-user-data', AccountInfo.updatePersonInfo)
     this.router.delete('/api/remove-account', AccountInfo.removeAccount)
     // person friendShip

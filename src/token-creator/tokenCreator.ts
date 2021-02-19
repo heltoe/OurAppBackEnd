@@ -7,15 +7,16 @@ import settings from "../settings"
 // import UserInfo from '../mongo-models/UserInfo'
 import { errorFeedBack } from '../FeedBack'
 import { ErrorResponse } from '../router'
+import { usersTokenTable } from '../mongo-models/Tables'
 
 export type Token = {
   id?: string
-  userId?: number
+  user_id?: number
   type: string
 }
 export type Tokens = {
-  accessToken: string
-  refreshToken: string
+  access_token: string
+  refresh_token: string
 }
 export type RefreshToken = {
   id: string
@@ -23,50 +24,50 @@ export type RefreshToken = {
 }
 
 class TokenCreator {
-  public generateAccessToken(userId: number) {
-  //   const payload: Token = {
-  //     userId,
-  //     type: settings.JWT.access.type
-  //   }
-  //   const options = { expiresIn: settings.JWT.access.expiresIn }
-  //   return jwt.sign(payload, settings.JWT.secret, options)
+  public generateAccessToken(user_id: number) {
+    const payload: Token = {
+      user_id,
+      type: settings.JWT.access.type
+    }
+    const options = { expiresIn: settings.JWT.access.expiresIn }
+    return jwt.sign(payload, settings.JWT.secret, options)
   }
   public generateRefreshToken() {
-    // const payload: Token = {
-    //   id: uuidv4(),
-    //   type: settings.JWT.refresh.type
-    // }
-    // const options = { expiresIn: settings.JWT.refresh.expiresIn }
-    // return {
-    //   id: payload.id!,
-    //   token: jwt.sign(payload, settings.JWT.secret, options)
-    // }
+    const payload: Token = {
+      id: uuidv4(),
+      type: settings.JWT.refresh.type
+    }
+    const options = { expiresIn: settings.JWT.refresh.expiresIn }
+    return {
+      id: payload.id!,
+      token: jwt.sign(payload, settings.JWT.secret, options)
+    }
   }
-  public async updateTokens(userId: number) {
+  public async updateTokens(user_id: number) {
     try {
-      // const accessToken: string = this.generateAccessToken(userId)
-      // const refreshToken: RefreshToken = this.generateRefreshToken()
-      // await this.replaceDbRefreshToken(refreshToken.id, userId)
-      // return {
-      //   accessToken,
-      //   refreshToken: refreshToken.token
-      // }
+      const access_token: string = this.generateAccessToken(user_id)
+      const refresh_token: RefreshToken = this.generateRefreshToken()
+      await this.replaceDbRefreshToken({ user_id, token_id: refresh_token.id })
+      return {
+        access_token,
+        refresh_token: refresh_token.token
+      }
     } catch(e) {
       console.log('updateTokens', e)
       return null
     }
   }
-  public async replaceDbRefreshToken(tokenId: string, userId: number): Promise<void> {
+  public async replaceDbRefreshToken({ user_id, token_id }: { user_id: number, token_id: string }): Promise<void> {
     try {
-      // this.removeToken(userId)
-      // await Token.create({ tokenId, userId })
+      this.removeToken(user_id)
+      await usersTokenTable.createEssence({ user_id, token_id })
     } catch(e) {
       console.log('replaceDbRefreshToken', e)
     }
   }
-  public async removeToken(userId: number): Promise<void> {
+  public async removeToken(user_id: number): Promise<void> {
     try {
-      // await Token.findOneAndDelete({ userId })
+      await usersTokenTable.deleteEssence({ user_id })
     } catch(e) {
       console.log('removeToken', e)
     }

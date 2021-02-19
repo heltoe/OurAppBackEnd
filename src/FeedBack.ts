@@ -29,6 +29,7 @@ export const errorFeedBack = {
     empty: 'List messages is empty',
     exist: 'List messages is exists'
   },
+  commonEmpty: 'Empty essence',
   connectDb: 'Error connect to DataBase',
   requiredFields: 'Data must be require'
 }

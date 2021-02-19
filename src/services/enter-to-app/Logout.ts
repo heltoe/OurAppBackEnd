@@ -6,8 +6,8 @@ import { ErrorResponse } from '../../router'
 class Logout {
   public async logout(req: Request, res: Response): Promise<Response<ErrorResponse>> {
     try {
-      const userId: number = req.body.userId
-      await TokenCreator.removeToken(userId)
+      const user_id: number = req.body.user_id
+      await TokenCreator.removeToken(user_id)
       return res.status(200).json({ status: successFeedBack.enterToApp.logout })
     } catch(e) {
       return res.status(404).json({ status: errorFeedBack.enterToApp.logout })
