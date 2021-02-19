@@ -2,112 +2,112 @@ import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import settings from "../../settings"
 import { errorFeedBack, successFeedBack } from '../../FeedBack'
-import UserInfo, { DataUserInfo } from '../../mongo-models/UserInfo'
-import User from '../../mongo-models/User'
+// import UserInfo, { DataUserInfo } from '../../mongo-models/UserInfo'
+// import User from '../../mongo-models/User'
 import Chats from '../../mongo-models/message/Chats'
-import Friends from '../../mongo-models/Friends'
+// import Friends from '../../mongo-models/Friends'
 import FriendShip from '../../mongo-models/FriendShip'
-import Token from '../../mongo-models/Token'
+// import Token from '../../mongo-models/Token'
 
 type RemoveAccountTypeParams = {
   token: string
   userId: number
 }
 class AccountInfo {
-  public async getPersonInfo(req: Request, res: Response): Promise<Response<string>> {
+  public async getPersonInfo(req: Request, res: Response) {
     try {
-      const userId: string = req.params.id
-      if (!userId && !userId.length) throw new Error(errorFeedBack.requiredFields)
-      const accountInfo = await UserInfo.findOne({ userId: parseInt(userId) })
-      if (accountInfo) throw new Error(errorFeedBack.userData.empty)
-      return res.status(201).json({ data: accountInfo })
+      // const userId: string = req.params.id
+      // if (!userId && !userId.length) throw new Error(errorFeedBack.requiredFields)
+      // const accountInfo = await UserInfo.findOne({ userId: parseInt(userId) })
+      // if (accountInfo) throw new Error(errorFeedBack.userData.empty)
+      // return res.status(201).json({ data: accountInfo })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
   }
-  public async createPersonInfo(req: Request, res: Response): Promise<Response<string>> {
+  public async createPersonInfo(req: Request, res: Response) {
     try {
-      const {
-        userId,
-        firstName,
-        lastName,
-        gender,
-        status,
-        photo 
-      } = req.body as DataUserInfo
-      if (
-        !userId
-        && !firstName.length
-        && !lastName.length
-        && !gender.length
-        && !status.length
-        && !photo.length
-      ) throw new Error(errorFeedBack.requiredFields)
-      const isContain = await User.findOne({ id: userId })
-      if (!isContain) throw new Error(errorFeedBack.userData.empty)
-      const accountInfo = await UserInfo.findOne({ userId })
-      if (accountInfo) throw new Error(errorFeedBack.userData.exist)
-      await UserInfo.create({
-        userId,
-        firstName,
-        lastName,
-        gender,
-        status,
-        photo 
-      })
-      return res.status(200).json({ status: successFeedBack.common.status })
+      // const {
+      //   userId,
+      //   firstName,
+      //   lastName,
+      //   gender,
+      //   status,
+      //   photo 
+      // } = req.body as DataUserInfo
+      // if (
+      //   !userId
+      //   && !firstName.length
+      //   && !lastName.length
+      //   && !gender.length
+      //   && !status.length
+      //   && !photo.length
+      // ) throw new Error(errorFeedBack.requiredFields)
+      // const isContain = await User.findOne({ id: userId })
+      // if (!isContain) throw new Error(errorFeedBack.userData.empty)
+      // const accountInfo = await UserInfo.findOne({ userId })
+      // if (accountInfo) throw new Error(errorFeedBack.userData.exist)
+      // await UserInfo.create({
+      //   userId,
+      //   firstName,
+      //   lastName,
+      //   gender,
+      //   status,
+      //   photo 
+      // })
+      // return res.status(200).json({ status: successFeedBack.common.status })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
   }
-  public async updatePersonInfo(req: Request, res: Response): Promise<Response<string>> {
+  public async updatePersonInfo(req: Request, res: Response) {
     try {
-      const {
-        userId,
-        firstName,
-        lastName,
-        gender,
-        status,
-        photo 
-      } = req.body as DataUserInfo
-      if (
-        !userId
-        && !firstName.length
-        && !lastName.length
-        && !gender.length
-        && !status.length
-        && !photo.length
-      ) throw new Error(errorFeedBack.requiredFields)
-      const isContain = await User.findOne({ id: userId })
-      if (!isContain) throw new Error(errorFeedBack.enterToApp.emptyUser)
-      const accountInfo = await UserInfo.findOne({ userId })
-      if (!accountInfo) throw new Error(errorFeedBack.userData.empty)
-      await UserInfo.updateOne(
-        { userId },
-        {
-          firstName,
-          lastName,
-          gender,
-          status,
-          photo
-        })
-      return res.status(200).json({ status: successFeedBack.common.status })
+      // const {
+      //   userId,
+      //   firstName,
+      //   lastName,
+      //   gender,
+      //   status,
+      //   photo 
+      // } = req.body as DataUserInfo
+      // if (
+      //   !userId
+      //   && !firstName.length
+      //   && !lastName.length
+      //   && !gender.length
+      //   && !status.length
+      //   && !photo.length
+      // ) throw new Error(errorFeedBack.requiredFields)
+      // const isContain = await User.findOne({ id: userId })
+      // if (!isContain) throw new Error(errorFeedBack.enterToApp.emptyUser)
+      // const accountInfo = await UserInfo.findOne({ userId })
+      // if (!accountInfo) throw new Error(errorFeedBack.userData.empty)
+      // await UserInfo.updateOne(
+      //   { userId },
+      //   {
+      //     firstName,
+      //     lastName,
+      //     gender,
+      //     status,
+      //     photo
+      //   })
+      // return res.status(200).json({ status: successFeedBack.common.status })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
   }
   public async removeAccount(req: Request, res: Response) {
     try {
-      const { token, userId } = req.body as RemoveAccountTypeParams
-      if (!token && !token.length && !userId) throw new Error(errorFeedBack.requiredFields)
-      const payload = await jwt.verify(token, settings.JWT.secret) as any
-      if (payload.userId === userId) {
-        await User.findOneAndRemove({ userId })
-        await Friends.findOneAndRemove({ userId })
-        await Chats.findOneAndRemove({ userId })
-        await FriendShip.findOneAndRemove({ userId })
-      }
-      return res.status(200).json({ status: 'ok' })
+      // const { token, userId } = req.body as RemoveAccountTypeParams
+      // if (!token && !token.length && !userId) throw new Error(errorFeedBack.requiredFields)
+      // const payload = await jwt.verify(token, settings.JWT.secret) as any
+      // if (payload.userId === userId) {
+      //   await User.findOneAndRemove({ userId })
+      //   await Friends.findOneAndRemove({ userId })
+      //   await Chats.findOneAndRemove({ userId })
+      //   await FriendShip.findOneAndRemove({ userId })
+      // }
+      // return res.status(200).json({ status: 'ok' })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }

@@ -1,4 +1,6 @@
 import Pool from 'pg'
+import { Client } from 'pg'
+import settings from './settings'
 
 class AdapterDB {
   private db: any
@@ -6,13 +8,15 @@ class AdapterDB {
     this.db = null
   }
   public connect() {
-    this.db = new Pool.Pool({
-      user: 'admin',
-      password: 'admin',
-      database: 'chatApi',
+    this.db = new Client({
+      user: 'postgres',
+      password: 'postgres',
+      database: 'chat',
       host: 'localhost',
-      port: 5432
+      port: 5334,
+      connectionString: settings.POSTGRESS_URI
     })
+    return this.db.connect()
   }
   public getDb() {
     return this.db
