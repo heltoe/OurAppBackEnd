@@ -2,18 +2,10 @@ import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid'
 import settings from "../settings"
-// import Token from '../mongo-models/Token'
-// import User from '../mongo-models/User'
-// import UserInfo from '../mongo-models/UserInfo'
 import { errorFeedBack } from '../FeedBack'
-import { ErrorResponse } from '../router'
-import { usersTokenTable } from '../mongo-models/Tables'
+import { usersTokenTable, usersInfoTable } from '../models/Tables'
+import { Token, UserInfo } from '../models/Types'
 
-export type Token = {
-  id?: string
-  user_id?: number
-  type: string
-}
 export type Tokens = {
   access_token: string
   refresh_token: string
@@ -22,10 +14,16 @@ export type RefreshToken = {
   id: string
   token: string
 }
+type TokenGenerator = {
+  user_id: number
+  type: string
+  iat: number
+  exp: number
+}
 
 class TokenCreator {
   public generateAccessToken(user_id: number) {
-    const payload: Token = {
+    const payload: { user_id: number, type: string } = {
       user_id,
       type: settings.JWT.access.type
     }
@@ -33,7 +31,7 @@ class TokenCreator {
     return jwt.sign(payload, settings.JWT.secret, options)
   }
   public generateRefreshToken() {
-    const payload: Token = {
+    const payload: { id: string, type: string } = {
       id: uuidv4(),
       type: settings.JWT.refresh.type
     }
@@ -57,7 +55,7 @@ class TokenCreator {
       return null
     }
   }
-  public async replaceDbRefreshToken({ user_id, token_id }: { user_id: number, token_id: string }): Promise<void> {
+  public async replaceDbRefreshToken({ user_id, token_id }: { user_id: number, token_id: string }) {
     try {
       this.removeToken(user_id)
       await usersTokenTable.createEssence({ user_id, token_id })
@@ -74,23 +72,21 @@ class TokenCreator {
   }
   public async getUserIdByToken(req: Request, res: Response) {
     try {
-      // const token: string = req.body.token
-      // if (!token && !token.length) throw new Error(errorFeedBack.requiredFields)
-      // const payload = await jwt.verify(req.body.token, settings.JWT.secret) as Token
-      // const user = await User.findOne({ id: payload.userId })
-      // const userInfo = await UserInfo.findOne({ userId: payload.userId })
-      // if (!user || !userInfo) throw new Error(errorFeedBack.enterToApp.validPassword)
-      // return res.status(200).json({
-      //   id: payload.userId,
-      //   email: user.email,
-      //   firstName: userInfo.firstName,
-      //   lastName: userInfo.lastName,
-      //   birthDate: userInfo.birthDate,
-      //   gender: userInfo.gender,
-      //   role: user.role,
-      //   location: userInfo.location,
-      //   photo: userInfo.photo
-      // })
+      const token: string = req.body.token
+      if (!token && !token.length) throw new Error(errorFeedBack.requiredFields)
+      const { user_id } = await jwt.verify(req.body.token, settings.JWT.secret) as TokenGenerator
+      const userInfo: UserInfo = await usersInfoTable.getEssence({ user_id })
+      return res.status(200).json({
+        result: {
+          id: userInfo.user_id,
+          firstName: userInfo.first_name,
+          lastName: userInfo.last_name,
+          gender: userInfo.gender,
+          birthDate: userInfo.birth_date,
+          phone: userInfo.phone,
+          photo: userInfo.photo
+        }
+      })
     } catch(e) {
       return res.status(401).json({ message: e.message })
     }
@@ -99,19 +95,19 @@ class TokenCreator {
     let payload: any
     // проверка refresh-token
     try {
-    //   const refreshToken: string = req.body.refreshToken
-    //   payload = await jwt.verify(refreshToken, settings.JWT.secret) as Token
-    //   if (payload.type !== 'refresh') return res.status(401).json({ message: errorFeedBack.tokens.invalid })
-    // } catch(e) {
-    //   if (e instanceof jwt.TokenExpiredError) return res.status(401).json({ message: errorFeedBack.tokens.expired })
-    //   if (e instanceof jwt.JsonWebTokenError) return res.status(401).json({ message: errorFeedBack.tokens.invalid })
-    // }
-    // // перезапись токенов
-    // try {
-    //   const token = await Token.findOne({ tokenId: payload.id })
-    //   if (token === null) throw new Error(errorFeedBack.tokens.invalid)
-    //   const tokens: Tokens | null = await this.updateTokens(token.userId)
-    //   return res.status(200).json(tokens)
+      const refreshToken: string = req.body.refreshToken
+      payload = await jwt.verify(refreshToken, settings.JWT.secret) as TokenGenerator
+      if (payload.type !== 'refresh') return res.status(401).json({ message: errorFeedBack.tokens.invalid })
+    } catch(e) {
+      if (e instanceof jwt.TokenExpiredError) return res.status(401).json({ message: errorFeedBack.tokens.expired })
+      if (e instanceof jwt.JsonWebTokenError) return res.status(401).json({ message: errorFeedBack.tokens.invalid })
+    }
+    // перезапись токенов
+    try {
+      const token: Token = await usersTokenTable.getEssence({ token_id: payload.id })
+      if (token === null) throw new Error(errorFeedBack.tokens.invalid)
+      const tokens: Tokens | null = await this.updateTokens(token.user_id)
+      return res.status(200).json(tokens)
     } catch(e) {
       return res.status(401).json({ message: e.message })
     }

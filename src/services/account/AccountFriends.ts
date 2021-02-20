@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { errorFeedBack } from '../../FeedBack'
-import { usersInfoTable, usersFriendShipTable, usersFriendTable } from '../../mongo-models/Tables'
-import { UserInfo, FriendShips, Friends } from '../../mongo-models/Types'
+import { usersInfoTable, usersFriendShipTable, usersFriendTable } from '../../models/Tables'
+import { UserInfo, FriendShips, Friends } from '../../models/Types'
 
 type CommonInfoForTable = {
   user_id: number

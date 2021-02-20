@@ -2,8 +2,8 @@ import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import settings from "../../settings"
 import { errorFeedBack } from '../../FeedBack'
-import { usersInfoTable, tables } from '../../mongo-models/Tables'
-import { UserInfo } from '../../mongo-models/Types'
+import { usersInfoTable, tables } from '../../models/Tables'
+import { UserInfo } from '../../models/Types'
 
 type RemoveAccountTypeParams = {
   token: string

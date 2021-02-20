@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import { errorFeedBack } from '../../FeedBack'
-import { usersTable, usersInfoTable } from '../../mongo-models/Tables'
+import { usersTable, usersInfoTable } from '../../models/Tables'
 import TokenCreator, { Tokens } from '../../token-creator/tokenCreator'
 
 const template = {

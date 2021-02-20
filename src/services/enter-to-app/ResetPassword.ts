@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import { errorFeedBack } from '../../FeedBack'
-import { usersTable } from '../../mongo-models/Tables'
+import { usersTable } from '../../models/Tables'
 import nodeMailer from '../../send-mailer/send-to-mail'
 
 class ResetPassword {

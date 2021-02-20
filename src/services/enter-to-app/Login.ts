@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
-import { usersTable } from '../../mongo-models/Tables'
+import { usersTable } from '../../models/Tables'
 import TokenCreator, { Tokens } from '../../token-creator/tokenCreator'
 import { errorFeedBack } from '../../FeedBack'
 

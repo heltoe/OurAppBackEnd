@@ -25,3 +25,8 @@ export type Friends = {
   user_id: number
   friend_id: number
 }
+
+export type Token = {
+  user_id: number
+  token_id: string
+}

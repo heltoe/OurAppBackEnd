@@ -1,6 +1,4 @@
 import { Request, Response } from 'express'
-// import { ExtractDoc } from 'ts-mongoose'
-// import Content, { ContentChatSchema } from '../../mongo-models/message/Message'
 import { errorFeedBack } from '../../FeedBack'
 
 class AccountChat {
