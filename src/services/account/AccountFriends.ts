@@ -6,7 +6,6 @@ import { UserInfo, FriendShips, Friends } from '../../models/Types'
 type CommonInfoForTable = {
   user_id: number
   friend_id: number
-  friend_ship_id: number
 }
 type LimitedRows = {
   offset: string | null
@@ -24,12 +23,13 @@ class AccountFriends {
         limit: limit ? parseInt(limit) : null
       })
       const friend_ships_data: { rows: FriendShips[], count: number } = await usersFriendShipTable.getEssences({
-        identify_data: { user_id: parseInt(user_id) }
+        identify_data: { friend_ship_id: parseInt(user_id) }
       })
       const friends_data: { rows: Friends[], count: number } = await usersFriendTable.getEssences({
         identify_data: { user_id: parseInt(user_id) }
       })
-      const arrId = [...friend_ships_data.rows.map(item => item.friend_ship_id), ...friends_data.rows.map(item => item.friend_id)]
+      const arrId = [...friend_ships_data.rows.map(item => item.user_id), ...friends_data.rows.map(item => item.friend_id)]
+      console.log(rows)
       const parsed_users = rows.filter(item => item.user_id !== parseInt(user_id)).map(item => ({
         id: item.user_id,
         first_name: item.first_name,
@@ -113,18 +113,19 @@ class AccountFriends {
   }
   public async addToFriendShip(req: Request, res: Response) {
     try {
-      const { user_id, friend_ship_id }: CommonInfoForTable = req.body
-      if (!user_id || !friend_ship_id) throw new Error(errorFeedBack.requiredFields)
-      await usersFriendShipTable.createEssence({ user_id, friend_ship_id })
-      return res.status(201).json({ user_id: friend_ship_id })
+      const { user_id, friend_id }: CommonInfoForTable = req.body
+      if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
+      await usersFriendShipTable.createEssence({ user_id: friend_id, friend_ship_id: user_id })
+      return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
   }
   public async removeFromFriendShip(req: Request, res: Response) {
     try {
-      const { user_id, friend_id }: CommonInfoForTable = req.body
-      await usersFriendShipTable.deleteEssence({ user_id, friend_id })
+      const { friend_id }: CommonInfoForTable = req.body
+      if (!friend_id) throw new Error(errorFeedBack.requiredFields)
+      await usersFriendShipTable.deleteEssence({ user_id: friend_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -134,8 +135,8 @@ class AccountFriends {
     try {
       const { user_id, friend_id }: CommonInfoForTable = req.body
       if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
-      await usersFriendShipTable.deleteEssence({ user_id, friend_id })
-      await usersFriendTable.createEssence({ user_id, friend_id })
+      await usersFriendShipTable.deleteEssence({ user_id: friend_id })
+      await usersFriendTable.createEssence({ user_id: friend_id, friend_id: user_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -143,9 +144,9 @@ class AccountFriends {
   }
   public async removeFromFriend(req: Request, res: Response) {
     try {
-      const { user_id, friend_id }: CommonInfoForTable = req.body
-      if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
-      await usersFriendTable.deleteEssence({ user_id, friend_id })
+      const { friend_id }: CommonInfoForTable = req.body
+      if (!friend_id) throw new Error(errorFeedBack.requiredFields)
+      await usersFriendTable.deleteEssence({ user_id: friend_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })

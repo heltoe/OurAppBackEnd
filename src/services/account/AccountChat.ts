@@ -30,6 +30,7 @@ class AccountChat {
       //   next: limit && page && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(page)) ? parseInt(limit) * parseInt(page) < count : false,
       //   results: parsedChats
       // })
+      return res.status(200).json('ok')
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }

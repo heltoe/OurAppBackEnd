@@ -87,6 +87,7 @@ export class CommonEssence {
   }
   public async deleteEssence(identify_data: Object) {
     try {
+      console.log(`DELETE FROM ${this.tableName} WHERE ${Object.keys(identify_data).map((item, index) => `${item} = $${index + 1}`).join(', ')}`)
       await adapterDBConnector.getDb().query(
         `DELETE FROM ${this.tableName} WHERE ${Object.keys(identify_data).map((item, index) => `${item} = $${index + 1}`).join(', ')}`,
         Object.values(identify_data)
