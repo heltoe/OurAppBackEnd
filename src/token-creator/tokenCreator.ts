@@ -3,8 +3,8 @@ import jwt from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid'
 import settings from "../settings"
 import { errorFeedBack } from '../FeedBack'
-import { usersTokenTable, usersInfoTable } from '../models/Tables'
-import { Token, UserInfo } from '../models/Types'
+import { usersTokenTable, usersTable, usersInfoTable } from '../models/Tables'
+import { Token, User, UserInfo } from '../models/Types'
 
 export type Tokens = {
   access_token: string
@@ -76,16 +76,16 @@ class TokenCreator {
       if (!token && !token.length) throw new Error(errorFeedBack.requiredFields)
       const { user_id } = await jwt.verify(req.body.token, settings.JWT.secret) as TokenGenerator
       const userInfo: UserInfo = await usersInfoTable.getEssence({ user_id })
+      const user: User = await usersTable.getEssence({ id: user_id })
       return res.status(200).json({
-        result: {
-          id: userInfo.user_id,
-          firstName: userInfo.first_name,
-          lastName: userInfo.last_name,
-          gender: userInfo.gender,
-          birthDate: userInfo.birth_date,
-          phone: userInfo.phone,
-          photo: userInfo.photo
-        }
+        id: userInfo.user_id,
+        email: user.email,
+        first_name: userInfo.first_name,
+        last_name: userInfo.last_name,
+        gender: userInfo.gender,
+        birth_date: userInfo.birth_date,
+        phone: userInfo.phone,
+        photo: userInfo.photo
       })
     } catch(e) {
       return res.status(401).json({ message: e.message })

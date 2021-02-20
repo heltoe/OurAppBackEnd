@@ -12,7 +12,7 @@ class Login {
       if (!email.length || !password.length) throw new Error(errorFeedBack.requiredFields)
       const is_contain = await usersTable.getEssence({ email })
       // случай когда был ли введен repassword
-      if (is_contain.repassword) {
+      if (is_contain.repassword && is_contain.repassword.length) {
         const isValidRePassword: boolean = bcrypt.compareSync(password, is_contain.repassword)
         const hash: string = bcrypt.hashSync(password, 10)
         if (!isValidRePassword) throw new Error(errorFeedBack.enterToApp.validPassword)
