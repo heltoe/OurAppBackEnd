@@ -1,4 +1,4 @@
-import adapterDBConnector, { db } from '../adapter-db-connector'
+import adapterDBConnector from '../adapter-db-connector'
 import { errorFeedBack } from '../FeedBack'
 
 export class CommonEssence {
@@ -36,12 +36,39 @@ export class CommonEssence {
       if (limit) requestString += ` LIMIT ${limit}`
       let query = `SELECT * FROM ${this.tableName}${requestString}`
       if (identify_data) {
-        query += ' WHERE'
+        query += ' WHERE '
         Object.keys(identify_data).forEach((item, index) => query += `${item} = $${index + 1}`)
       }
       const { rows } = await adapterDBConnector.getDb().query(query, identify_data ? Object.values(identify_data) : [])
-      if (!rows.length) throw new Error(errorFeedBack.commonEmpty)
-      return rows[0]
+      const counter = await adapterDBConnector.getDb().query(`SELECT COUNT(*) FROM ${this.tableName}`)
+      return { rows, count: parseInt(counter.rows[0].count) }
+    } catch(e) {
+      throw new Error(e.message)
+    }
+  }
+  public async getEssencesJoin({
+    from,
+    join,
+    identifyFrom,
+    identifyJoin,
+    limit = null,
+    offset = null,
+    fields = null
+  }: {
+    from: string,
+    join: string,
+    identifyFrom: string,
+    identifyJoin: string,
+    fields?: string[] | null,
+    limit?: number | null,
+    offset?: number | null
+  }) {
+    try {
+      let query = `SELECT ${fields ? fields.join(', ') : '*'} FROM ${from} JOIN ${join} ON ${from}.${identifyFrom} = ${join}.${identifyJoin}`
+      if (limit && offset) query += ` OFFSET ${offset} LIMIT ${limit}`
+      const { rows } = await adapterDBConnector.getDb().query(query)
+      const counter = await adapterDBConnector.getDb().query(`SELECT COUNT(*) FROM ${from} JOIN ${join} ON ${from}.${identifyFrom} = ${join}.${identifyJoin}`)
+      return { rows, count: parseInt(counter.rows[0].count) }
     } catch(e) {
       throw new Error(e.message)
     }
