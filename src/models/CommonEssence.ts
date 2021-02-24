@@ -29,17 +29,29 @@ export class CommonEssence {
       throw new Error(e.message)
     }
   }
-  public async getEssences({ identify_data = null, limit = null, offset = null }: { identify_data?: Object | null, limit?: number | null, offset?: number | null }) {
+  public async getEssences({ identify_data = null, limit = null, offset = null, exclude = null }: { identify_data?: Object | null, limit?: number | null, offset?: number | null, exclude?: Object | null, }) {
     try {
       let requestString = ''
       if (offset) requestString += ` OFFSET ${offset}`
       if (limit) requestString += ` LIMIT ${limit}`
-      let query = `SELECT * FROM ${this.tableName}${requestString}`
+      let query = `SELECT * FROM ${this.tableName}`
+      const data: any = []
       if (identify_data) {
         query += ' WHERE '
-        Object.keys(identify_data).forEach((item, index) => query += `${item} = $${index + 1}`)
+        Object.keys(identify_data).forEach(item => {
+          // @ts-ignore
+          data.push(identify_data[item])
+          query += `${item} = $${data.length}`
+        })
       }
-      const { rows } = await adapterDBConnector.getDb().query(query, identify_data ? Object.values(identify_data) : [])
+      if (exclude) Object.keys(exclude).forEach(item => {
+        // @ts-ignore
+        data.push(exclude[item])
+        if (!identify_data) query += ' WHERE'
+        query += ` ${item} != $${data.length}`
+      })
+      query += requestString
+      const { rows } = await adapterDBConnector.getDb().query(query, data)
       const counter = await adapterDBConnector.getDb().query(`SELECT COUNT(*) FROM ${this.tableName}`)
       return { rows, count: parseInt(counter.rows[0].count) }
     } catch(e) {
@@ -51,6 +63,7 @@ export class CommonEssence {
     join,
     identifyFrom,
     identifyJoin,
+    exclude = null,
     limit = null,
     offset = null,
     fields = null
@@ -59,6 +72,7 @@ export class CommonEssence {
     join: string,
     identifyFrom: string,
     identifyJoin: string,
+    exclude?: number | null,
     fields?: string[] | null,
     limit?: number | null,
     offset?: number | null
@@ -66,6 +80,7 @@ export class CommonEssence {
     try {
       let query = `SELECT ${fields ? fields.join(', ') : '*'} FROM ${from} JOIN ${join} ON ${from}.${identifyFrom} = ${join}.${identifyJoin}`
       if (limit && offset) query += ` OFFSET ${offset} LIMIT ${limit}`
+      if (exclude) query += ` WHERE ${from}.${identifyFrom} != ${exclude}`
       const { rows } = await adapterDBConnector.getDb().query(query)
       const counter = await adapterDBConnector.getDb().query(`SELECT COUNT(*) FROM ${from} JOIN ${join} ON ${from}.${identifyFrom} = ${join}.${identifyJoin}`)
       return { rows, count: parseInt(counter.rows[0].count) }

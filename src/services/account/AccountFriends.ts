@@ -19,8 +19,9 @@ class AccountFriends {
       if (!user_id && !user_id.length) throw new Error(errorFeedBack.requiredFields)
       const { rows, count }: { rows: UserInfo[], count: number } = await usersInfoTable.getEssences({
         identify_data: null,
-        offset: offset ? parseInt(offset) : null,
-        limit: limit ? parseInt(limit) : null
+        exclude: { user_id: parseInt(user_id) },
+        offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
+        limit: limit ? parseInt(limit): null
       })
       const friend_ships_data: { rows: FriendShips[], count: number } = await usersFriendShipTable.getEssences({
         identify_data: { friend_ship_id: parseInt(user_id) }
@@ -29,8 +30,7 @@ class AccountFriends {
         identify_data: { user_id: parseInt(user_id) }
       })
       const arrId = [...friend_ships_data.rows.map(item => item.user_id), ...friends_data.rows.map(item => item.friend_id)]
-      console.log(rows)
-      const parsed_users = rows.filter(item => item.user_id !== parseInt(user_id)).map(item => ({
+      const parsed_users = rows.map(item => ({
         id: item.user_id,
         first_name: item.first_name,
         last_name: item.last_name,
@@ -59,8 +59,9 @@ class AccountFriends {
         join: 'users_friend',
         identifyFrom: 'user_id',
         identifyJoin: 'user_id',
+        exclude: parseInt(user_id),
         limit: limit ? parseInt(limit) : null,
-        offset: offset ? parseInt(offset) : null
+        offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
       })
       const parsed_friends = rows.map(item => ({
         id: item.user_id,
@@ -85,16 +86,17 @@ class AccountFriends {
       const user_id: string = req.params.id
       const { offset, limit } = req.query as LimitedRows
       if (!user_id && !user_id.length) throw new Error(errorFeedBack.requiredFields)
-      const { rows, count }: { rows: UserInfo[], count: number } = await usersFriendShipTable.getEssencesJoin({
+      const { rows, count }: { rows: any[], count: number } = await usersFriendShipTable.getEssencesJoin({
         from: 'users_info',
         join: 'users_friendship',
         identifyFrom: 'user_id',
-        identifyJoin: 'user_id',
+        identifyJoin: 'friend_ship_id',
+        fields: ['friend_ship_id','first_name','last_name','gender','birth_date','phone','photo'],
         limit: limit ? parseInt(limit) : null,
-        offset: offset ? parseInt(offset) : null
+        offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
       })
       const parsed_friend_ships = rows.map(item => ({
-        id: item.user_id,
+        id: item.friend_ship_id,
         first_name: item.first_name,
         last_name: item.last_name,
         gender: item.gender,
@@ -123,9 +125,9 @@ class AccountFriends {
   }
   public async removeFromFriendShip(req: Request, res: Response) {
     try {
-      const { friend_id }: CommonInfoForTable = req.body
-      if (!friend_id) throw new Error(errorFeedBack.requiredFields)
-      await usersFriendShipTable.deleteEssence({ user_id: friend_id })
+      const { user_id, friend_id }: CommonInfoForTable = req.body
+      if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
+      await usersFriendShipTable.deleteEssence({ user_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -135,7 +137,9 @@ class AccountFriends {
     try {
       const { user_id, friend_id }: CommonInfoForTable = req.body
       if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
-      await usersFriendShipTable.deleteEssence({ user_id: friend_id })
+      await usersFriendShipTable.deleteEssence({ user_id })
+      console.log(user_id, friend_id)
+      await usersFriendTable.createEssence({ user_id, friend_id })
       await usersFriendTable.createEssence({ user_id: friend_id, friend_id: user_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
@@ -144,9 +148,10 @@ class AccountFriends {
   }
   public async removeFromFriend(req: Request, res: Response) {
     try {
-      const { friend_id }: CommonInfoForTable = req.body
-      if (!friend_id) throw new Error(errorFeedBack.requiredFields)
+      const { user_id, friend_id }: CommonInfoForTable = req.body
+      if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
       await usersFriendTable.deleteEssence({ user_id: friend_id })
+      await usersFriendTable.deleteEssence({ user_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })
