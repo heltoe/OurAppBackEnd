@@ -35,7 +35,9 @@ export class CommonEssence {
       if (offset) requestString += ` OFFSET ${offset}`
       if (limit) requestString += ` LIMIT ${limit}`
       let query = `SELECT * FROM ${this.tableName}`
+      let counterQuery = `SELECT COUNT(*) FROM ${this.tableName}`
       const data: any = []
+      const dataCount: any = []
       if (identify_data) {
         query += ' WHERE '
         Object.keys(identify_data).forEach(item => {
@@ -44,15 +46,16 @@ export class CommonEssence {
           query += `${item} = $${data.length}`
         })
       }
-      if (exclude) Object.keys(exclude).forEach(item => {
-        // @ts-ignore
-        data.push(exclude[item])
+      if (exclude) {
+        data.push(Object.values(exclude)[0])
+        dataCount.push(Object.values(exclude)[0])
         if (!identify_data) query += ' WHERE'
-        query += ` ${item} != $${data.length}`
-      })
+        query += ` ${Object.keys(exclude)[0]} != $${data.length}`
+        counterQuery += ` WHERE ${Object.keys(exclude)[0]} != $${dataCount.length}`
+      }
       query += requestString
       const { rows } = await adapterDBConnector.getDb().query(query, data)
-      const counter = await adapterDBConnector.getDb().query(`SELECT COUNT(*) FROM ${this.tableName}`)
+      const counter = await adapterDBConnector.getDb().query(counterQuery, dataCount)
       return { rows, count: parseInt(counter.rows[0].count) }
     } catch(e) {
       throw new Error(e.message)
@@ -79,10 +82,14 @@ export class CommonEssence {
   }) {
     try {
       let query = `SELECT ${fields ? fields.join(', ') : '*'} FROM ${from} JOIN ${join} ON ${from}.${identifyFrom} = ${join}.${identifyJoin}`
+      let counterQuery = `SELECT COUNT(*) FROM ${from} JOIN ${join} ON ${from}.${identifyFrom} = ${join}.${identifyJoin}`
       if (limit && offset) query += ` OFFSET ${offset} LIMIT ${limit}`
-      if (exclude) query += ` WHERE ${from}.${identifyFrom} != ${exclude}`
+      if (exclude) {
+        query += ` WHERE ${from}.${identifyFrom} != ${exclude}`
+        counterQuery += ` WHERE ${from}.${identifyFrom} != ${exclude}`
+      }
       const { rows } = await adapterDBConnector.getDb().query(query)
-      const counter = await adapterDBConnector.getDb().query(`SELECT COUNT(*) FROM ${from} JOIN ${join} ON ${from}.${identifyFrom} = ${join}.${identifyJoin}`)
+      const counter = await adapterDBConnector.getDb().query(counterQuery)
       return { rows, count: parseInt(counter.rows[0].count) }
     } catch(e) {
       throw new Error(e.message)
@@ -102,7 +109,6 @@ export class CommonEssence {
   }
   public async deleteEssence(identify_data: Object) {
     try {
-      console.log(`DELETE FROM ${this.tableName} WHERE ${Object.keys(identify_data).map((item, index) => `${item} = $${index + 1}`).join(', ')}`)
       await adapterDBConnector.getDb().query(
         `DELETE FROM ${this.tableName} WHERE ${Object.keys(identify_data).map((item, index) => `${item} = $${index + 1}`).join(', ')}`,
         Object.values(identify_data)

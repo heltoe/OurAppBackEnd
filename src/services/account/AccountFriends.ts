@@ -42,7 +42,7 @@ class AccountFriends {
       }))
       return res.status(200).json({
         count,
-        next: limit && offset && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(offset)) ? parseInt(limit) * parseInt(offset) < count : false,
+        next: limit && offset && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(offset)) ? parseInt(limit) * (parseInt(offset) || 1) < count : false,
         results: parsed_users
       })
     } catch(e) {
@@ -74,7 +74,7 @@ class AccountFriends {
       }))
       return res.status(200).json({
         count,
-        next: limit && offset && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(offset)) ? parseInt(limit) * parseInt(offset) < count : false,
+        next: limit && offset && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(offset)) ? parseInt(limit) * (parseInt(offset) || 1) < count : false,
         results: parsed_friends
       })
     } catch(e) {
@@ -106,8 +106,7 @@ class AccountFriends {
       }))
       return res.status(200).json({
         count,
-        next: limit && offset && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(offset)) ? parseInt(limit) * parseInt(offset) < count : false,
-        results: parsed_friend_ships
+        next: limit && offset && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(offset)) ? parseInt(limit) * (parseInt(offset) || 1) < count : false,
       })
     } catch (e) {
       return res.status(404).json({ message: e.message })
