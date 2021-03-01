@@ -1,14 +1,12 @@
 import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 import settings from "../../settings"
 import { errorFeedBack } from '../../FeedBack'
 import { usersInfoTable, tables } from '../../models/Tables'
 import { UserInfo } from '../../models/Types'
+import { TokenGenerator } from '../../token-creator/tokenCreator'
 
-type RemoveAccountTypeParams = {
-  token: string
-  user_id: number
-}
 class AccountInfo {
   public async getPersonInfo(req: Request, res: Response) {
     try {
@@ -56,11 +54,23 @@ class AccountInfo {
       return res.status(404).json({ message: e.message })
     }
   }
+  public async changePassword(req: Request, res: Response) {
+    try {
+      const { token, user_id, password }: { token: string, user_id: number, password: number } = req.body
+      if (!token && !user_id && !password) throw new Error(errorFeedBack.requiredFields)
+      const payload = await jwt.verify(token, settings.JWT.secret) as TokenGenerator
+      if (payload.user_id !== user_id) throw new Error(errorFeedBack.userData.empty)
+      await tables.user.updateEssence({ id: user_id }, { password: bcrypt.hashSync(password, 10) })
+      return res.status(200).json({ status: 'ok' })
+    } catch(e) {
+      return res.status(404).json({ message: e.message })
+    }
+  }
   public async removeAccount(req: Request, res: Response) {
     try {
       const { token, user_id }: { token: string, user_id: number } = req.body
       if (!token && !user_id) throw new Error(errorFeedBack.requiredFields)
-      const payload: RemoveAccountTypeParams = await jwt.verify(token, settings.JWT.secret) as any
+      const payload = await jwt.verify(token, settings.JWT.secret) as TokenGenerator
       if (payload.user_id === user_id) {
         // @ts-ignore
         const requests: any = Object.keys(tables).map(item => requests.push(tables[item].deleteEssence(item === 'user' ? { id: user_id } : { user_id })))

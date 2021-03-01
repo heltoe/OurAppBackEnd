@@ -14,7 +14,7 @@ export type RefreshToken = {
   id: string
   token: string
 }
-type TokenGenerator = {
+export type TokenGenerator = {
   user_id: number
   type: string
   iat: number
