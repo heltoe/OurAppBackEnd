@@ -30,6 +30,7 @@ class Routes {
     this.router.get('/api/user-data/:id', AccountInfo.getPersonInfo)
     this.router.put('/api/update-user-data', AccountInfo.updatePersonInfo)
     this.router.put('/api/change-password', AccountInfo.changePassword)
+    this.router.put('/api/change-avatar', AccountInfo.changeAvatar)
     this.router.delete('/api/remove-account', AccountInfo.removeAccount)
     // person friendShip
     this.router.get('/api/list-friendship/:id', AccountFriends.getFriendShipList)

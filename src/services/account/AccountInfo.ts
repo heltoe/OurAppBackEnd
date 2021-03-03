@@ -3,16 +3,17 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import settings from "../../settings"
 import { errorFeedBack } from '../../FeedBack'
-import { usersInfoTable, tables } from '../../models/Tables'
-import { UserInfo } from '../../models/Types'
+import { tables } from '../../models/Tables'
+import { User, UserInfo } from '../../models/Types'
 import { TokenGenerator } from '../../token-creator/tokenCreator'
+import Uploader from '../../save-assets/Uploader'
 
 class AccountInfo {
   public async getPersonInfo(req: Request, res: Response) {
     try {
       const user_id: string = req.params.id
       if (!user_id && !user_id.length) throw new Error(errorFeedBack.requiredFields)
-      const accountInfo: UserInfo = await usersInfoTable.getEssence({ user_id: parseInt(user_id) })
+      const accountInfo: UserInfo = await tables.info.getEssence({ user_id: parseInt(user_id) })
       return res.status(200).json({ result: accountInfo })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -20,36 +21,44 @@ class AccountInfo {
   }
   public async updatePersonInfo(req: Request, res: Response) {
     try {
-      // status,
-      const {
-        user_id,
-        first_name,
-        last_name,
-        gender,
-        birth_date,
-        photo,
-        phone
-      }: {
-        user_id: number,
-        first_name: string,
-        last_name: string,
-        gender: string,
-        birth_date: string,
-        photo: string
-        phone: string
-      } = req.body
-      if (!user_id) throw new Error(errorFeedBack.requiredFields)
-      const data: Object = {}
-      const isExistField = (payload: Object) => {
-        Object.keys(payload).forEach(item => {
-          // @ts-ignore
-          if (payload[item] && payload[item].length) data[item] = payload[item]
-        })
+      const { token, user_id, password }: { token: string, user_id: number, password: number } = req.body
+      if (!token && !user_id && !password) throw new Error(errorFeedBack.requiredFields)
+      const payload = await jwt.verify(token, settings.JWT.secret) as TokenGenerator
+      if (payload.user_id !== user_id) throw new Error(errorFeedBack.userData.empty)
+      const data: {
+        first_name?: string,
+        last_name?: string,
+        birth_date?: Date,
+        phone?: string
+      } = {}
+      if (req.body.first_name) data.first_name = req.body.first_name
+      if (req.body.last_name) data.last_name = req.body.last_name
+      if (req.body.birth_date) data.birth_date = req.body.birth_date
+      if (req.body.phone) data.phone = req.body.phone
+      if (Object.keys(data).length || req.body.email) {
+        const user_info: UserInfo | User = Object.keys(data).length
+          ? await tables.info.updateEssence({ user_id }, data)
+          : await tables.user.updateEssence({ id: user_id }, { email: req.body.email })
+        // @ts-ignore
+        const user: User = await tables.user.getEssence({ id: user_id })
+        return res.status(201).json({ ...user_info, email: user.email })
       }
-      isExistField({ first_name, last_name, gender, birth_date, photo, phone })
-      if (!Object.keys(data).length) throw new Error(errorFeedBack.requiredFields)
-      const user_info: UserInfo = await usersInfoTable.updateEssence({ user_id }, data)
-      return res.status(201).json({ result: user_info })
+      throw new Error(errorFeedBack.requiredFields)
+    } catch(e) {
+      return res.status(404).json({ message: e.message })
+    }
+  }
+  public async changeAvatar(req: Request, res: Response) {
+    try {
+      const { token, user_id }: { token: string, user_id: string } = req.body
+      if (!token && !user_id) throw new Error(errorFeedBack.requiredFields)
+      if (!req.files.length) throw new Error(errorFeedBack.requiredFields)
+      const payload = await jwt.verify(token, settings.JWT.secret) as TokenGenerator
+      if (payload.user_id !== parseInt(user_id)) throw new Error(errorFeedBack.userData.empty)
+      // @ts-ignore
+      const photo = await Uploader.uploadFile(req.files[0])
+      await tables.info.updateEssence({ user_id: parseInt(user_id) }, { photo })
+      return res.status(200).json({ result: photo })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }

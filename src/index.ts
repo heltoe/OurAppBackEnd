@@ -1,10 +1,23 @@
 import express, { Application } from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
+import multer from 'multer'
+import bodyParser from 'body-parser'
+// @ts-ignore
+import EasyYandexS3  from 'easy-yandex-s3'
 import settings from './settings'
 import router from './router'
 import adapterDBConnector from './adapter-db-connector'
 import { errorFeedBack } from './FeedBack'
+
+export const s3 = new EasyYandexS3({
+  auth: {
+    accessKeyId: 'tq73fAvDHrzYEmxOgp27',
+    secretAccessKey: '5sd2UQhjLTHCegvHvsSGOx0pHPolWRhIs2KPz1Ua',
+  },
+  Bucket: 'chat-storage',
+  debug: false
+});
 
 class Server {
   private app: Application
@@ -19,6 +32,10 @@ class Server {
     this.app.use(express.json())
     this.app.use(helmet())
     this.app.use(cors())
+    this.app.use(multer().any())
+    this.app.use(bodyParser.json())
+    this.app.use(bodyParser.urlencoded())
+    this.app.use(bodyParser.urlencoded({ extended: true }))
   }
   private routes(): void {
     this.app.use(router)
