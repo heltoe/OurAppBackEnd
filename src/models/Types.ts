@@ -31,3 +31,16 @@ export type Token = {
   user_id: number
   token_id: string
 }
+
+export type Chat = {
+  id_chat: number
+  members: number[]
+  last_message: number
+}
+export type Message = {
+  id_message: number,
+  id_chat: number,
+  author: number,
+  message: string,
+  date: string,
+}

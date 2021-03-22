@@ -39,26 +39,24 @@ CREATE TABLE users_friend(
 );
 
 CREATE TABLE users_chat(
-  id SERIAL PRIMARY KEY,
-  sendler_id SERIAL NOT NULL,
-  recipient_id SERIAL NOT NULL,
-  FOREIGN KEY (sendler_id) REFERENCES users_info (user_id),
-  FOREIGN KEY (recipient_id) REFERENCES users_info (user_id)
+  id_chat SERIAL PRIMARY KEY,
+  members integer[] NOT NULL,
+  last_message_id SERIAL
 );
 
 CREATE TABLE chat_messages(
-  id SERIAL PRIMARY KEY,
+  id_message SERIAL PRIMARY KEY,
   id_chat SERIAL NOT NULL,
   author SERIAL NOT NULL,
   message VARCHAR(250) NOT NULL,
   date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
   FOREIGN KEY (author) REFERENCES users_info (user_id),
-  FOREIGN KEY (id_chat) REFERENCES users_chat (id)
+  FOREIGN KEY (id_chat) REFERENCES users_chat (id_chat)
 );
 
 CREATE TABLE chat_files(
-  id SERIAL PRIMARY KEY,
+  id_file SERIAL PRIMARY KEY,
   id_message SERIAL NOT NULL,
   source_file VARCHAR(250) NOT NULL,
-  FOREIGN KEY (id_chat) REFERENCES chat_messages (id),
-)
+  FOREIGN KEY (id_message) REFERENCES chat_messages (id_message)
+);

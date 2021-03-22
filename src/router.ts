@@ -43,6 +43,8 @@ class Routes {
     this.router.delete('/api/remove-from-friend', AccountFriends.removeFromFriend.bind(AccountFriends))
     // person chat
     this.router.get('/api/list-chat/:id', AccountChat.getListChat)
+    this.router.get('/api/content-chat/:id', AccountChat.getChatContent)
+    this.router.post('/api/set-message', AccountChat.setMessage.bind(AccountChat))
   }
 }
 

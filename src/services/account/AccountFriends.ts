@@ -1,13 +1,13 @@
 import { Request, Response } from 'express'
 import { errorFeedBack } from '../../FeedBack'
-import { usersInfoTable, usersFriendShipTable, usersFriendTable } from '../../models/Tables'
+import { tables } from '../../models/Tables'
 import { UserInfo, FriendShips, Friends } from '../../models/Types'
 
 type CommonInfoForTable = {
   user_id: number
   friend_id: number
 }
-type LimitedRows = {
+export type LimitedRows = {
   offset: string | null
   limit: string | null
 }
@@ -17,16 +17,16 @@ class AccountFriends {
       const user_id: string = req.params.id
       const { offset, limit } = req.query as LimitedRows
       if (!user_id && !user_id.length) throw new Error(errorFeedBack.requiredFields)
-      const { rows, count }: { rows: UserInfo[], count: number } = await usersInfoTable.getEssences({
+      const { rows, count }: { rows: UserInfo[], count: number } = await tables.info.getEssences({
         identify_data: null,
         exclude: { user_id: parseInt(user_id) },
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
         limit: limit ? parseInt(limit): null
       })
-      const friend_ships_data: { rows: FriendShips[], count: number } = await usersFriendShipTable.getEssences({
+      const friend_ships_data: { rows: FriendShips[], count: number } = await tables.friendship.getEssences({
         identify_data: { friend_ship_id: parseInt(user_id) }
       })
-      const friends_data: { rows: Friends[], count: number } = await usersFriendTable.getEssences({
+      const friends_data: { rows: Friends[], count: number } = await tables.friend.getEssences({
         identify_data: { user_id: parseInt(user_id) }
       })
       const arrId = [...friend_ships_data.rows.map(item => item.user_id), ...friends_data.rows.map(item => item.friend_id)]
@@ -55,7 +55,7 @@ class AccountFriends {
       const user_id: string = req.params.id
       const { offset, limit } = req.query as LimitedRows
       if (!user_id && !user_id.length) throw new Error(errorFeedBack.requiredFields)
-      const { rows, count }: { rows: UserInfo[], count: number } = await usersFriendTable.getEssencesJoin({
+      const { rows, count }: { rows: UserInfo[], count: number } = await tables.friend.getEssencesJoin({
         from: 'users_info',
         join: 'users_friend',
         identifyFrom: 'user_id',
@@ -88,7 +88,7 @@ class AccountFriends {
       const user_id: string = req.params.id
       const { offset, limit } = req.query as LimitedRows
       if (!user_id && !user_id.length) throw new Error(errorFeedBack.requiredFields)
-      const { rows, count }: { rows: any[], count: number } = await usersFriendShipTable.getEssencesJoin({
+      const { rows, count }: { rows: any[], count: number } = await tables.friendship.getEssencesJoin({
         from: 'users_info',
         join: 'users_friendship',
         identifyFrom: 'user_id',
@@ -120,7 +120,7 @@ class AccountFriends {
     try {
       const { user_id, friend_id }: CommonInfoForTable = req.body
       if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
-      await usersFriendShipTable.createEssence({ user_id: friend_id, friend_ship_id: user_id })
+      await tables.friendship.createEssence({ user_id: friend_id, friend_ship_id: user_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -130,7 +130,7 @@ class AccountFriends {
     try {
       const { user_id, friend_id }: CommonInfoForTable = req.body
       if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
-      await usersFriendShipTable.deleteEssence({ user_id })
+      await tables.friendship.deleteEssence({ user_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -140,10 +140,9 @@ class AccountFriends {
     try {
       const { user_id, friend_id }: CommonInfoForTable = req.body
       if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
-      await usersFriendShipTable.deleteEssence({ user_id })
-      await usersFriendTable.createEssence({ user_id, friend_id })
-      await usersFriendTable.createEssence({ user_id: friend_id, friend_id: user_id })
-      
+      await tables.friendship.deleteEssence({ user_id })
+      await tables.friend.createEssence({ user_id, friend_id })
+      await tables.friend.createEssence({ user_id: friend_id, friend_id: user_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -153,8 +152,8 @@ class AccountFriends {
     try {
       const { user_id, friend_id }: CommonInfoForTable = req.body
       if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
-      await usersFriendTable.deleteEssence({ user_id: friend_id })
-      await usersFriendTable.deleteEssence({ user_id })
+      await tables.friend.deleteEssence({ user_id: friend_id })
+      await tables.friend.deleteEssence({ user_id })
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })
