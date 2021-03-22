@@ -29,7 +29,18 @@ export class CommonEssence {
       throw new Error(e.message)
     }
   }
-  public async getEssences({ identify_data = null, limit = null, offset = null, exclude = null }: { identify_data?: Object | null, limit?: number | null, offset?: number | null, exclude?: Object | null, }) {
+  public async getEssences({
+    identify_data = null,
+    limit = null,
+    offset = null,
+    exclude = null
+  }:
+  {
+    identify_data?: Object | null,
+    limit?: number | null,
+    offset?: number | null,
+    exclude?: Object | null,
+  }) {
     try {
       let requestString = ''
       if (offset) requestString += ` OFFSET ${offset}`

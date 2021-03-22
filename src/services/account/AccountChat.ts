@@ -15,11 +15,11 @@ type MessageRequest = {
 class AccountChat {
   public async getListChat(req: Request, res: Response) {
     try {
-      const user_id: string = req.params.user_id
+      const user_id: string = req.params.id
       const { offset, limit } = req.query as LimitedRows
       if (!user_id && !user_id.length) throw new Error(errorFeedBack.requiredFields)
-      const { rows, count }: { rows: Chat[], count: number } = await tables.chats.getEssences({
-        identify_data: { sendler_id: parseInt(user_id) },
+      const { rows, count }: { rows: Chat[], count: number } = await this.findListChat({
+        identify_data: [parseInt(user_id)],
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
         limit: limit ? parseInt(limit): null
       })
@@ -34,21 +34,25 @@ class AccountChat {
   }
   public async getChatContent(req: Request, res: Response) {
     try {
-      const id_chat: string = req.params.id_chat
-      const { offset, limit } = req.query as LimitedRows
-      if (!id_chat && !id_chat.length) throw new Error(errorFeedBack.requiredFields)
+      const { user_id, recipment_id, offset, limit }: { user_id: number, recipment_id: number, offset: number, limit: number } = req.body
+      const response: { rows: Chat[], count: number } = await this.findListChat({
+        identify_data: [user_id, recipment_id],
+        limit: 1
+      })
+      const id_chat: number = response.rows[0].id_chat
+      if (!id_chat) throw new Error(errorFeedBack.requiredFields)
       const { rows, count }: { rows: any[], count: number } = await tables.messages.getEssencesJoin({
         from: 'chat_messages',
         join: 'users_chat',
         identifyFrom: 'id_chat',
-        identifyJoin: 'id_message',
+        identifyJoin: 'id_chat',
         fields: ['id_message', 'author','message','date'],
-        limit: limit ? parseInt(limit) : null,
-        offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
+        limit: limit || null,
+        offset: offset && limit ? offset * limit : null,
       })
       return res.status(200).json({
         count,
-        next: limit && offset && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(offset)) ? parseInt(limit) * (parseInt(offset) || 1) < count : false,
+        next: limit && offset ? limit * (offset || 1) < count : false,
         results: rows
       })
     } catch(e) {
@@ -62,8 +66,11 @@ class AccountChat {
       let idExistedChat  = id_chat
       // Проверка на то есть ли чат
       if (!idExistedChat && recipient) {
-        const isExistChat = await this.isExistChat([author, recipient])
-        if (isExistChat) throw new Error(errorFeedBack.requiredFields)
+        const { count }: { rows: Chat[], count: number } = await this.findListChat({
+          identify_data: [author, recipient],
+          limit: 1
+        })
+        if (count === 0) throw new Error(errorFeedBack.requiredFields)
         const chat: Chat = await tables.chats.createEssence({ members: `{${author},${recipient}}` })
         idExistedChat = chat.id_chat
       }
@@ -79,19 +86,35 @@ class AccountChat {
       return res.status(404).json({ message: e.message })
     }
   }
-  public async isExistChat(arr: number[]) {
+  public async findListChat({
+    identify_data = [],
+    limit = null,
+    offset = null,
+  }:
+  {
+    identify_data?: number[],
+    limit?: number | null,
+    offset?: number | null,
+  }) {
     try {
-      const searchRow = arr.map((item, index) => {
+      let requestString = ''
+      if (offset) requestString += ` OFFSET ${offset}`
+      if (limit) requestString += ` LIMIT ${limit}`
+      const searchRow = identify_data.map((item, index) => {
         const searchString = []
         let counter = 0
-        while(counter < arr.length) {
+        while(counter < identify_data.length) {
           searchString.push(`members[${counter + 1}] = $${index + 1}`)
           counter++
         }
         return searchString.join(' OR ')
       }).join(' OR ')
-      const responce = await adapterDBConnector.getDb().query(`SELECT * FROM users_chat WHERE ${searchRow}`, arr)
-      return responce.rows.length > 0
+      let result = 'SELECT * FROM users_chat'
+      if (searchRow.length) result += ` WHERE ${searchRow}`
+      if (requestString.length ) result += requestString
+      const { rows } = await adapterDBConnector.getDb().query(result, identify_data)
+      const counter = await adapterDBConnector.getDb().query(result, identify_data)
+      return { rows, count: parseInt(counter.rows[0].count) }
     } catch(e) {
       throw new Error(e.message);
     }

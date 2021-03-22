@@ -93,7 +93,7 @@ class AccountFriends {
         join: 'users_friendship',
         identifyFrom: 'user_id',
         identifyJoin: 'friend_ship_id',
-        fields: ['friend_ship_id','first_name','last_name','gender','birth_date','phone','photo'],
+        fields: ['friend_ship_id','first_name','last_name','gender','birth_date','phone', 'original_photo', 'croped_photo'],
         limit: limit ? parseInt(limit) : null,
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
       })
