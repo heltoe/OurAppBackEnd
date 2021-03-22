@@ -34,7 +34,8 @@ class AccountFriends {
         id: item.user_id,
         first_name: item.first_name,
         last_name: item.last_name,
-        // image: item.photo,
+        original_photo: item.original_photo,
+        croped_photo: item.croped_photo,
         gender: item.gender,
         birth_date: item.birth_date,
         phone: item.phone,
@@ -70,7 +71,8 @@ class AccountFriends {
         gender: item.gender,
         birth_date: item.birth_date,
         phone: item.phone,
-        photo: item.photo
+        original_photo: item.original_photo,
+        croped_photo: item.croped_photo,
       }))
       return res.status(200).json({
         count,
@@ -102,11 +104,13 @@ class AccountFriends {
         gender: item.gender,
         birth_date: item.birth_date,
         phone: item.phone,
-        photo: item.photo
+        original_photo: item.original_photo,
+        croped_photo: item.croped_photo,
       }))
       return res.status(200).json({
         count,
         next: limit && offset && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(offset)) ? parseInt(limit) * (parseInt(offset) || 1) < count : false,
+        results: parsed_friend_ships
       })
     } catch (e) {
       return res.status(404).json({ message: e.message })
@@ -137,9 +141,9 @@ class AccountFriends {
       const { user_id, friend_id }: CommonInfoForTable = req.body
       if (!user_id || !friend_id) throw new Error(errorFeedBack.requiredFields)
       await usersFriendShipTable.deleteEssence({ user_id })
-      console.log(user_id, friend_id)
       await usersFriendTable.createEssence({ user_id, friend_id })
       await usersFriendTable.createEssence({ user_id: friend_id, friend_id: user_id })
+      
       return res.status(201).json({ user_id: friend_id })
     } catch(e) {
       return res.status(404).json({ message: e.message })

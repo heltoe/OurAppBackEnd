@@ -1,9 +1,12 @@
 import { s3 } from '../index'
 
 class Uploader {
-  public async uploadFile(file: any) {
+  public async uploadFile(file: any, path: string = '') {
     try {
-      console.log(typeof file)
+      if (path.length) {
+        const name = path.split('/')
+        const answer = await s3.Remove(`images/${name[name.length - 1]}`)
+      }
       const upload: {
         ETag: string
         VersionId: string

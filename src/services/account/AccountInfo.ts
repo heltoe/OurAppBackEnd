@@ -39,7 +39,6 @@ class AccountInfo {
         const user_info: UserInfo | User = Object.keys(data).length
           ? await tables.info.updateEssence({ user_id }, data)
           : await tables.user.updateEssence({ id: user_id }, { email: req.body.email })
-        // @ts-ignore
         const user: User = await tables.user.getEssence({ id: user_id })
         return res.status(201).json({ ...user_info, email: user.email })
       }
@@ -56,9 +55,14 @@ class AccountInfo {
       const payload = await jwt.verify(token, settings.JWT.secret) as TokenGenerator
       if (payload.user_id !== parseInt(user_id)) throw new Error(errorFeedBack.userData.empty)
       // @ts-ignore
-      const photo = await Uploader.uploadFile(req.files[0])
-      await tables.info.updateEssence({ user_id: parseInt(user_id) }, { photo })
-      return res.status(200).json({ result: photo })
+      const original_file = req.files.find(item => item.fieldname === 'original_photo')
+      // @ts-ignore
+      const croped_file = req.files.find(item => item.fieldname === 'croped_photo')
+      if (!original_file || !original_file) throw new Error(errorFeedBack.requiredFields)
+      const original_photo = await Uploader.uploadFile(original_file, req.body.original_photo_name || '')
+      const croped_photo = await Uploader.uploadFile(croped_file, req.body.croped_photo_name || '')
+      await tables.info.updateEssence({ user_id: parseInt(user_id) }, { original_photo, croped_photo })
+      return res.status(200).json({ original_photo, croped_photo })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }

@@ -85,7 +85,8 @@ class TokenCreator {
         gender: userInfo.gender,
         birth_date: userInfo.birth_date,
         phone: userInfo.phone,
-        photo: userInfo.photo
+        original_photo: userInfo.original_photo,
+        croped_photo: userInfo.croped_photo,
       })
     } catch(e) {
       return res.status(401).json({ message: e.message })

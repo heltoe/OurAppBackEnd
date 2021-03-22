@@ -13,7 +13,8 @@ export type UserInfo = {
   gender: string
   birth_date: string
   phone: string
-  photo: string | null
+  original_photo: string | null
+  croped_photo: string | null
 }
 
 export type FriendShips = {
