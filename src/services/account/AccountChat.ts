@@ -23,7 +23,7 @@ class AccountChat {
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
         limit: limit ? parseInt(limit): null
       })
-      const arrMessagesRequests = rows.map(item => tables.messages.getEssence({ id_message: item.last_message_id }))
+      const arrMessagesRequests = rows.map(item => tables.messages.getEssence({ message_id: item.last_message_id }))
       const arrMessagesResponse = await Promise.all(arrMessagesRequests)
       const parsedRows = rows.map((item, index) => {
         const { message_id, message, date, author  } = arrMessagesResponse[index]
