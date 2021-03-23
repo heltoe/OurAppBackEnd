@@ -67,7 +67,7 @@ export class CommonEssence {
       query += requestString
       const { rows } = await adapterDBConnector.getDb().query(query, data)
       const counter = await adapterDBConnector.getDb().query(counterQuery, dataCount)
-      return { rows, count: parseInt(counter.rows[0].count) }
+      return { rows, count: counter.rows.length ? parseInt(counter.rows[0].count) : 0 }
     } catch(e) {
       throw new Error(e.message)
     }
@@ -101,7 +101,7 @@ export class CommonEssence {
       }
       const { rows } = await adapterDBConnector.getDb().query(query)
       const counter = await adapterDBConnector.getDb().query(counterQuery)
-      return { rows, count: parseInt(counter.rows[0].count) }
+      return { rows, count: counter.rows.length ? parseInt(counter.rows[0].count) : 0 }
     } catch(e) {
       throw new Error(e.message)
     }

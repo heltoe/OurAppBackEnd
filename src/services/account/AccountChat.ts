@@ -6,7 +6,7 @@ import { errorFeedBack } from '../../FeedBack'
 import { Chat, Message } from '../../models/Types'
 
 type MessageRequest = {
-  id_chat: number | null
+  chat_id: number | null
   author: number
   message: string
   date: string
@@ -23,10 +23,25 @@ class AccountChat {
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
         limit: limit ? parseInt(limit): null
       })
+      const arrMessagesRequests = rows.map(item => tables.messages.getEssence({ id_message: item.last_message_id }))
+      const arrMessagesResponse = await Promise.all(arrMessagesRequests)
+      const parsedRows = rows.map((item, index) => {
+        const { message_id, message, date, author  } = arrMessagesResponse[index]
+        return {
+          chat_id: item.chat_id,
+          last_message_id: {
+            message_id,
+            message,
+            date,
+            author,
+          },
+          members: item.members
+        }
+      })
       return res.status(201).json({
         count,
         next: limit && offset && Number.isInteger(parseInt(limit)) && Number.isInteger(parseInt(offset)) ? parseInt(limit) * (parseInt(offset) || 1) < count : false,
-        results: rows
+        results: parsedRows
       })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -35,25 +50,29 @@ class AccountChat {
   public async getChatContent(req: Request, res: Response) {
     try {
       const { user_id, recipment_id, offset, limit }: { user_id: number, recipment_id: number, offset: number, limit: number } = req.body
-      const response: { rows: Chat[], count: number } = await this.findListChat({
-        identify_data: [user_id, recipment_id],
-        limit: 1
+      const responseChat: { rows: Chat[], count: number } = await this.findListChat({
+        identify_data: [user_id, recipment_id]
       })
-      const id_chat: number = response.rows[0].id_chat
-      if (!id_chat) throw new Error(errorFeedBack.requiredFields)
-      const { rows, count }: { rows: any[], count: number } = await tables.messages.getEssencesJoin({
-        from: 'chat_messages',
-        join: 'users_chat',
-        identifyFrom: 'id_chat',
-        identifyJoin: 'id_chat',
-        fields: ['id_message', 'author','message','date'],
-        limit: limit || null,
-        offset: offset && limit ? offset * limit : null,
-      })
+      let chat_id: number | null = null
+      let rows: Message[] = []
+      let count = 0
+      if (responseChat.rows.length) chat_id = responseChat.rows[0].chat_id
+      if (typeof chat_id === 'number') {
+        const responseMessages: { rows: Message[], count: number } = await tables.messages.getEssences({
+          identify_data: { chat_id },
+          limit: limit || null,
+          offset: offset && limit ? offset * limit : null,
+        })
+        rows = responseMessages.rows
+        count = responseMessages.count
+      }
       return res.status(200).json({
         count,
         next: limit && offset ? limit * (offset || 1) < count : false,
-        results: rows
+        results: {
+          messages: rows,
+          chat_id
+        }
       })
     } catch(e) {
       return res.status(404).json({ message: e.message })
@@ -61,27 +80,27 @@ class AccountChat {
   }
   public async setMessage(req: Request, res: Response) {
     try {
-      const { id_chat, author, message, date, recipient }: MessageRequest = req.body
+      const { chat_id, author, message, date, recipient }: MessageRequest = req.body
       if (!author || (message && !message.length) || (date && !date.length)) throw new Error(errorFeedBack.requiredFields)
-      let idExistedChat  = id_chat
+      let idExistedChat  = chat_id
       // Проверка на то есть ли чат
       if (!idExistedChat && recipient) {
         const { count }: { rows: Chat[], count: number } = await this.findListChat({
           identify_data: [author, recipient],
           limit: 1
         })
-        if (count === 0) throw new Error(errorFeedBack.requiredFields)
+        if (count !== 0) throw new Error(errorFeedBack.requiredFields)
         const chat: Chat = await tables.chats.createEssence({ members: `{${author},${recipient}}` })
-        idExistedChat = chat.id_chat
+        idExistedChat = chat.chat_id
       }
       const saved_message: Message  = await tables.messages.createEssence({
-        id_chat: idExistedChat,
+        chat_id: idExistedChat,
         author,
         message,
         date
       })
-      await tables.chats.updateEssence({ id_chat: idExistedChat }, { last_message_id: saved_message.id_message })
-      return res.status(201).json({ id_chat: idExistedChat })
+      await tables.chats.updateEssence({ chat_id: idExistedChat }, { last_message_id: saved_message.message_id })
+      return res.status(201).json({ chat_id: idExistedChat, message: saved_message })
     } catch(e) {
       return res.status(404).json({ message: e.message })
     }
@@ -114,7 +133,7 @@ class AccountChat {
       if (requestString.length ) result += requestString
       const { rows } = await adapterDBConnector.getDb().query(result, identify_data)
       const counter = await adapterDBConnector.getDb().query(result, identify_data)
-      return { rows, count: parseInt(counter.rows[0].count) }
+      return { rows, count: counter.rows.length ? parseInt(counter.rows[0].count) : 0 }
     } catch(e) {
       throw new Error(e.message);
     }

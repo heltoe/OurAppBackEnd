@@ -33,13 +33,13 @@ export type Token = {
 }
 
 export type Chat = {
-  id_chat: number
+  chat_id: number
   members: number[]
-  last_message: number
+  last_message_id: number
 }
 export type Message = {
-  id_message: number,
-  id_chat: number,
+  message_id: number,
+  chat_id: number,
   author: number,
   message: string,
   date: string,
