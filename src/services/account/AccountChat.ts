@@ -24,7 +24,9 @@ class AccountChat {
         limit: limit ? parseInt(limit): null
       })
       const arrMessagesRequests = rows.map(item => tables.messages.getEssence({ message_id: item.last_message_id }))
+      const arrRecipmentRequests = rows.map(item => tables.info.getEssence({ user_id: item.members.filter(item => item !== parseInt(user_id))[0] }))
       const arrMessagesResponse = await Promise.all(arrMessagesRequests)
+      const arrRecipmentResponse = await Promise.all(arrRecipmentRequests)
       const parsedRows = rows.map((item, index) => {
         const { message_id, message, date, author  } = arrMessagesResponse[index]
         return {
@@ -35,7 +37,7 @@ class AccountChat {
             date,
             author,
           },
-          members: item.members
+          recipment: arrRecipmentResponse[index]
         }
       })
       return res.status(201).json({
@@ -61,14 +63,14 @@ class AccountChat {
         const responseMessages: { rows: Message[], count: number } = await tables.messages.getEssences({
           identify_data: { chat_id },
           limit: limit || null,
-          offset: offset && limit ? offset * limit : null,
+          offset: typeof offset === 'number' && typeof limit === 'number' ? offset * limit : null,
         })
         rows = responseMessages.rows
         count = responseMessages.count
       }
       return res.status(200).json({
         count,
-        next: limit && offset ? limit * (offset || 1) < count : false,
+        next: typeof limit === 'number' && typeof offset === 'number' ? limit * (offset || 1) < count : false,
         results: {
           messages: rows,
           chat_id
