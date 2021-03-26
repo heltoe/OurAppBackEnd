@@ -78,7 +78,7 @@ class TokenCreator {
       const userInfo: UserInfo = await usersInfoTable.getEssence({ user_id })
       const user: User = await usersTable.getEssence({ id: user_id })
       return res.status(200).json({
-        id: userInfo.user_id,
+        user_id: userInfo.user_id,
         email: user.email,
         first_name: userInfo.first_name,
         last_name: userInfo.last_name,

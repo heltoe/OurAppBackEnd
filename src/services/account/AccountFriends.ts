@@ -31,7 +31,7 @@ class AccountFriends {
       })
       const arrId = [...friend_ships_data.rows.map(item => item.user_id), ...friends_data.rows.map(item => item.friend_id)]
       const parsed_users = rows.map(item => ({
-        id: item.user_id,
+        user_id: item.user_id,
         first_name: item.first_name,
         last_name: item.last_name,
         original_photo: item.original_photo,
@@ -65,7 +65,7 @@ class AccountFriends {
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
       })
       const parsed_friends = rows.map(item => ({
-        id: item.user_id,
+        user_id: item.user_id,
         first_name: item.first_name,
         last_name: item.last_name,
         gender: item.gender,
@@ -98,7 +98,7 @@ class AccountFriends {
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
       })
       const parsed_friend_ships = rows.map(item => ({
-        id: item.friend_ship_id,
+        user_id: item.friend_ship_id,
         first_name: item.first_name,
         last_name: item.last_name,
         gender: item.gender,
