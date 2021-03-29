@@ -17,14 +17,14 @@ export class CommonEssence {
       throw new Error(e.message)
     }
   }
-  public async getEssence(identify_data: Object) {
+  public async getEssence(identify_data: Object, isEmittedException = true) {
     try {
       const { rows } = await adapterDBConnector.getDb().query(
-        `SELECT * FROM ${this.tableName} WHERE ${Object.keys(identify_data).map((item, index) => `${item} = $${index + 1}`).join(', ')}`,
+        `SELECT * FROM ${this.tableName} WHERE ${Object.keys(identify_data).map((item, index) => `${item} = $${index + 1}`).join(' and ')}`,
         Object.values(identify_data)
       )
-      if (!rows.length) throw new Error(errorFeedBack.commonEmpty)
-      return rows[0]
+      if (!rows.length && isEmittedException) throw new Error(errorFeedBack.commonEmpty)
+      return rows.length ? rows[0] : []
     } catch(e) {
       throw new Error(e.message)
     }
@@ -51,18 +51,23 @@ export class CommonEssence {
       const dataCount: any = []
       if (identify_data) {
         query += ' WHERE '
+        counterQuery += ' WHERE '
         Object.keys(identify_data).forEach(item => {
           // @ts-ignore
           data.push(identify_data[item])
+          // @ts-ignore
+          dataCount.push(identify_data[item])
           query += `${item} = $${data.length}`
+          counterQuery += `${item} = $${dataCount.length}`
         })
       }
       if (exclude) {
         data.push(Object.values(exclude)[0])
         dataCount.push(Object.values(exclude)[0])
         if (!identify_data) query += ' WHERE'
+        if (!identify_data) counterQuery += ' WHERE'
         query += ` ${Object.keys(exclude)[0]} != $${data.length}`
-        counterQuery += ` WHERE ${Object.keys(exclude)[0]} != $${dataCount.length}`
+        counterQuery += ` ${Object.keys(exclude)[0]} != $${dataCount.length}`
       }
       query += requestString
       const { rows } = await adapterDBConnector.getDb().query(query, data)
@@ -78,6 +83,7 @@ export class CommonEssence {
     identifyFrom,
     identifyJoin,
     exclude = null,
+    identifyBy = null,
     limit = null,
     offset = null,
     fields = null
@@ -87,6 +93,7 @@ export class CommonEssence {
     identifyFrom: string,
     identifyJoin: string,
     exclude?: number | null,
+    identifyBy?: Object | null
     fields?: string[] | null,
     limit?: number | null,
     offset?: number | null
@@ -98,6 +105,12 @@ export class CommonEssence {
       if (exclude) {
         query += ` WHERE ${from}.${identifyFrom} != ${exclude}`
         counterQuery += ` WHERE ${from}.${identifyFrom} != ${exclude}`
+      }
+      if (identifyBy) {
+        // @ts-ignore
+        const arrIdentify = Object.keys(identifyBy).map(item => `${from}.${item} = ${identifyBy[item]}`)
+        query += !exclude ? ` WHERE ${arrIdentify.join(' and ')}` : arrIdentify.join(' and ')
+        counterQuery += !exclude ? ` WHERE ${arrIdentify.join(' and ')}` : arrIdentify.join(' and ')
       }
       const { rows } = await adapterDBConnector.getDb().query(query)
       const counter = await adapterDBConnector.getDb().query(counterQuery)

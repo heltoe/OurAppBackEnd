@@ -8,6 +8,7 @@ export const usersFriendTable = new CommonEssence('users_friend')
 export const usersChatsTable = new CommonEssence('users_chat')
 export const chatsMessagesTable = new CommonEssence('chat_messages')
 export const chatMembersTable = new CommonEssence('chat_members')
+export const chatFilesTable = new CommonEssence('chat_files')
 
 export const tables = {
   user: usersTable,
@@ -17,5 +18,6 @@ export const tables = {
   friend: usersFriendTable,
   chats: usersChatsTable,
   chat_members: chatMembersTable,
-  messages: chatsMessagesTable
+  messages: chatsMessagesTable,
+  files_messages: chatFilesTable
 }

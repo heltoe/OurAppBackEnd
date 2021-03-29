@@ -40,6 +40,7 @@ export type ChatMembers = {
   id: number
   chat_id: number
   user_id: number
+  recipient_id: number
 }
 export type Message = {
   id: number,

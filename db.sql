@@ -50,8 +50,10 @@ CREATE TABLE chat_members(
   id SERIAL PRIMARY KEY,
   chat_id SERIAL NOT NULL,
   user_id SERIAL NOT NULL,
+  recipient_id SERIAL NOT NULL,
   FOREIGN KEY (chat_id) REFERENCES users_chat (id),
-  FOREIGN KEY (user_id) REFERENCES users_info (user_id)
+  FOREIGN KEY (user_id) REFERENCES users_info (user_id),
+  FOREIGN KEY (recipient_id) REFERENCES users_info (user_id)
 );
 CREATE TABLE chat_messages(
   id SERIAL PRIMARY KEY,
