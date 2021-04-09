@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { LimitedRows } from './AccountFriends'
 import { tables } from '../../models/Tables'
 import { errorFeedBack } from '../../FeedBack'
-import { Chat, Message, ChatMembers } from '../../models/Types'
+import { Chat, Message, ChatMembers, File } from '../../models/Types'
 import Uploader from '../../save-assets/Uploader'
 
 type MessageRequest = {
@@ -38,6 +38,8 @@ class AccountChat {
       const arrRecipientRequests = rows.map(item => tables.info.getEssence({ user_id: item.recipient_id }))
       const arrMessagesResponse = await Promise.all(arrMessagesRequests)
       const arrRecipientResponse = await Promise.all(arrRecipientRequests)
+      const arrImageRequests = rows.map(item => tables.files_messages.getEssence({ message_id: item.last_message_id }, false))
+      const arrImageResponse: File[] = await Promise.all(arrImageRequests)
       const parsedRows = rows.map((item, index) => {
         const { id, message, date, author  } = arrMessagesResponse[index]
         return {
@@ -47,6 +49,9 @@ class AccountChat {
             message,
             date,
             author,
+            files: !Array.isArray(arrImageResponse[index])
+              ? [arrImageResponse[index].source_file]
+              : arrImageResponse[index]
           },
           recipient: {
             user_id: arrRecipientResponse[index].id,

@@ -49,3 +49,8 @@ export type Message = {
   message: string,
   date: string,
 }
+export type File = {
+  id: number
+  message_id: number
+  source_file: string
+}
