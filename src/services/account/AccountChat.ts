@@ -5,7 +5,15 @@ import { errorFeedBack } from '../../FeedBack'
 import { Chat, Message, ChatMembers, File } from '../../models/Types'
 import Uploader from '../../save-assets/Uploader'
 
-type MessageRequest = {
+export type ChatContentType = {
+  user_id: number
+  recipient_id?: number
+  chat_id?: number
+  offset: number
+  limit: number
+}
+
+export type MessageRequest = {
   chat_id: number | null
   author: number
   message: string
@@ -111,9 +119,9 @@ class AccountChat {
       return res.status(404).json({ message: e.message })
     }
   }
-  public async setMessage(req: Request, res: Response) {
+  public async setMessage(data: MessageRequest) {
     try {
-      const { chat_id, author, message, date, recipient }: MessageRequest = req.body
+      const { chat_id, author, message, date, recipient, files } = data
       if (!author || (message && !message.length) || (date && !date.length)) throw new Error(errorFeedBack.requiredFields)
       let idExistedChat = chat_id
       // Проверка на то есть ли чат
@@ -152,17 +160,17 @@ class AccountChat {
         date
       })
       let local_photos: any[] = []
-      if (req.files && req.files.length) {
+      if (files && files.length) {
         // @ts-ignore
-        const photoRequest = req.files.map(item => Uploader.uploadFile(item))
+        const photoRequest = files.map(item => Uploader.uploadFile(item))
         const photoResponse = await Promise.all(photoRequest)
         const arrSetToDbPhotosRequest = photoResponse.map(item => tables.files_messages.createEssence({ message_id: saved_message.id, source_file: item }))
         local_photos = await Promise.all(arrSetToDbPhotosRequest)
       }
       await tables.chats.updateEssence({ id: idExistedChat }, { last_message_id: saved_message.id })
-      return res.status(201).json({ chat_id: idExistedChat, message: { ...saved_message, files: local_photos.map(item => item.source_file) }})
+      return { chat_id: idExistedChat, message: { ...saved_message, files: local_photos.map(item => item.source_file) }}
     } catch(e) {
-      return res.status(404).json({ message: e.message })
+      return { message: e.message }
     }
   }
 }

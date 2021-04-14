@@ -6,11 +6,10 @@ import multer from 'multer'
 import EasyYandexS3  from 'easy-yandex-s3'
 import settings from './settings'
 import router from './router'
+import SocketListener from './socket-listener'
 import adapterDBConnector from './adapter-db-connector'
 import { errorFeedBack } from './FeedBack'
 import { createServer  } from 'http'
-// @ts-ignore
-import io, { Socket } from 'socket.io'
 
 
 export const s3 = new EasyYandexS3({
@@ -25,24 +24,15 @@ export const s3 = new EasyYandexS3({
 class Server {
   private app: Application
   private server: any
-  private io: any
+  private socket: any
   constructor() {
     this.app = express()
     this.server = createServer(this.app)
-    const options = {
-      // wsEngine: 'eiows',
-      cors: {
-        origin: '*',
-      }
-    }
-    // @ts-ignore
-    this.io = io(this.server, options)
     this.config()
     this.routes()
   }
   private config(): void {
     // our plugins
-    // this.app.set('PORT', settings.PORT)
     this.app.use(express.json())
     this.app.use(helmet())
     this.app.use(cors())
@@ -50,16 +40,9 @@ class Server {
   }
   private routes(): void {
     this.app.use(router)
+    this.socket = new SocketListener(this.server)
   }
   private startServer(): void {
-    //Whenever someone connects this gets executed
-    // this.io.on('connection', function(socket: Socket) {
-    //   console.log('A user connected', socket);
-    //   //Whenever someone disconnects this piece of code executed
-    //   socket.on('disconnect', function () {
-    //     console.log('A user disconnected');
-    //   });
-    // });
     this.server.listen(settings.PORT, () => console.log(`Server started on ${settings.DOMAIN}`))
   }
   public async init() {
