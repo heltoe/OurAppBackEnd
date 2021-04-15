@@ -44,7 +44,7 @@ class Routes {
     // person chat
     this.router.get('/api/list-chats/:id', AccountChat.getListChat.bind(AccountChat))
     this.router.post('/api/content-chat', AccountChat.getChatContent.bind(AccountChat))
-    // this.router.post('/api/set-message', AccountChat.setMessage.bind(AccountChat))
+    this.router.post('/api/set-message', AccountChat.setMessage.bind(AccountChat))
   }
 }
 

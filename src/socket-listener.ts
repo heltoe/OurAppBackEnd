@@ -1,6 +1,14 @@
 import io, { Socket } from 'socket.io'
-import AccountChat, { MessageRequest } from './services/account/AccountChat'
+import { UserInfo } from './models/Types'
 
+type IncomminMessage = {
+  message_id: number
+  chat_id: number
+  author: number
+  message: string
+  date: string
+  files: string[]
+}
 export default class SocketListener {
   private socket: any
   constructor(server: any) {
@@ -16,20 +24,31 @@ export default class SocketListener {
   }
   private listeners(): void {
     this.socket.on('connection', (socket: Socket) => {
-      // socket.on('CHAT:LIST', ({ id, offset, limit }: {  }) => {
-
-      // })
-      socket.on('CHAT:JOIN', (chat_id) => {
-        socket.join(`${chat_id}`)
+      socket.on('APP:ENTER', (user_id: number) => {
+        socket.join(`FRIEND_ROOM_${user_id}`)
+        socket.join(`FRIENDSHIP_ROOM_${user_id}`)
+        console.log(socket.rooms)
       })
-      socket.on('CHAT:MESSAGE_SEND', async (data: MessageRequest) => {
-        // const response = await AccountChat.setMessage(data)
-        // console.log(response)
-        if (data.chat_id) socket.to(`${data.chat_id}`).emit('CHAT:MESSAGE_SENDED', { chat_id: data.chat_id, message: data })
+      socket.on('FRIENDSHIP:ADD', ({ user, recipient }: { user: UserInfo, recipient: number }) => {
+        socket.to(`FRIENDSHIP_ROOM_${recipient}`).emit('FRIENDSHIP:ADD_MESSAGE_SENDED', { user, recipient })
       })
-      // socket.on('PROFILE:SET_STATUS', () => {
-
-      // })
+      socket.on('FRIENDSHIP:REMOVE', ({ user, recipient }: { user: UserInfo, recipient: number }) => {
+        socket.to(`FRIENDSHIP_ROOM_${recipient}`).emit('FRIENDSHIP:REMOVE_MESSAGE_SENDED', { user, recipient })
+      })
+      //
+      socket.on('FRIEND:ADD', ({ user, recipient }: { user: UserInfo, recipient: number }) => {
+        socket.to(`FRIEND_ROOM_${recipient}`).emit('FRIEND:ADD_MESSAGE_SENDED', { user, recipient })
+      })
+      socket.on('FRIEND:REMOVE', ({ user, recipient }: { user: UserInfo, recipient: number }) => {
+        socket.to(`FRIEND_ROOM_${recipient}`).emit('FRIEND:REMOVE_MESSAGE_SENDED', { user, recipient })
+      })
+      //
+      socket.on('CHAT:JOIN', (chat_id: number) => {
+        socket.join(`CHAT_ROOM_${chat_id}`)
+      })
+      socket.on('CHAT:MESSAGE_SEND', async (data: IncomminMessage) => {
+        if (data.chat_id) socket.to(`CHAT_ROOM_${data.chat_id}`).emit('CHAT:MESSAGE_SENDED', data)
+      })
     })
   }
 }

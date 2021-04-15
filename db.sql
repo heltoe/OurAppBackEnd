@@ -20,7 +20,7 @@ CREATE TABLE users_info(
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
   gender VARCHAR(6) NOT NULL,
-  birth_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  birth_date date NOT NULL,
   phone VARCHAR(20) NOT NULL,
   croped_photo VARCHAR(150),
   original_photo VARCHAR(150),
@@ -44,7 +44,8 @@ CREATE TABLE users_friend(
 -- chat
 CREATE TABLE users_chat(
   id SERIAL PRIMARY KEY,
-  last_message_id SERIAL
+  last_message_id SERIAL,
+  last_update TIMESTAMP WITH TIME ZONE
 );
 CREATE TABLE chat_members(
   id SERIAL PRIMARY KEY,
@@ -60,7 +61,7 @@ CREATE TABLE chat_messages(
   chat_id SERIAL NOT NULL,
   author SERIAL NOT NULL,
   message VARCHAR(250) NOT NULL,
-  date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  date TIMESTAMP WITH TIME ZONE NOT NULL,
   FOREIGN KEY (author) REFERENCES users_info (user_id),
   FOREIGN KEY (chat_id) REFERENCES users_chat (id)
 );

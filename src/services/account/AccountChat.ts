@@ -41,6 +41,10 @@ class AccountChat {
         fields: ['recipient_id','last_message_id','chat_id'],
         limit: limit ? parseInt(limit) : null,
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
+        order: {
+          type: 'ASC',
+          field: 'last_update'
+        }
       })
       const arrMessagesRequests = rows.map(item => tables.messages.getEssence({ id: item.last_message_id }))
       const arrRecipientRequests = rows.map(item => tables.info.getEssence({ user_id: item.recipient_id }))
@@ -97,6 +101,10 @@ class AccountChat {
           identify_data: { chat_id: local_chat_id },
           limit: limit || null,
           offset: typeof offset === 'number' && typeof limit === 'number' ? offset * limit : null,
+          order: {
+            type: 'ASC',
+            field: 'date'
+          }
         })
         rows = responseMessages.rows
         count = responseMessages.count
@@ -119,9 +127,9 @@ class AccountChat {
       return res.status(404).json({ message: e.message })
     }
   }
-  public async setMessage(data: MessageRequest) {
+  public async setMessage(req: Request, res: Response) {
     try {
-      const { chat_id, author, message, date, recipient, files } = data
+      const { chat_id, author, message, date, recipient }: MessageRequest = req.body
       if (!author || (message && !message.length) || (date && !date.length)) throw new Error(errorFeedBack.requiredFields)
       let idExistedChat = chat_id
       // Проверка на то есть ли чат
@@ -160,17 +168,24 @@ class AccountChat {
         date
       })
       let local_photos: any[] = []
-      if (files && files.length) {
+      if (req.files && req.files.length) {
         // @ts-ignore
-        const photoRequest = files.map(item => Uploader.uploadFile(item))
+        const photoRequest = req.files.map(item => Uploader.uploadFile(item))
         const photoResponse = await Promise.all(photoRequest)
         const arrSetToDbPhotosRequest = photoResponse.map(item => tables.files_messages.createEssence({ message_id: saved_message.id, source_file: item }))
         local_photos = await Promise.all(arrSetToDbPhotosRequest)
       }
-      await tables.chats.updateEssence({ id: idExistedChat }, { last_message_id: saved_message.id })
-      return { chat_id: idExistedChat, message: { ...saved_message, files: local_photos.map(item => item.source_file) }}
+      await tables.chats.updateEssence({ id: idExistedChat }, { last_message_id: saved_message.id, last_update: saved_message.date })
+      return res.status(201).json({
+        message_id: saved_message.id,
+        chat_id: saved_message.chat_id,
+        author: saved_message.author,
+        message: saved_message.message,
+        date: saved_message.date,
+        files: local_photos.map(item => item.source_file)
+      })
     } catch(e) {
-      return { message: e.message }
+      return res.status(404).json({ message: e.message })
     }
   }
 }

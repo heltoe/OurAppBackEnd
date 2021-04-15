@@ -33,13 +33,15 @@ export class CommonEssence {
     identify_data = null,
     limit = null,
     offset = null,
-    exclude = null
+    exclude = null,
+    order = null
   }:
   {
     identify_data?: Object | null,
     limit?: number | null,
     offset?: number | null,
     exclude?: Object | null,
+    order?: { type: 'ASC' | 'DESC', field: string } | null
   }) {
     try {
       let requestString = ''
@@ -69,6 +71,7 @@ export class CommonEssence {
         query += ` ${Object.keys(exclude)[0]} != $${data.length}`
         counterQuery += ` ${Object.keys(exclude)[0]} != $${dataCount.length}`
       }
+      if (order) query += ` ORDER BY ${order.field} ${order.type}`
       query += requestString
       const { rows } = await adapterDBConnector.getDb().query(query, data)
       const counter = await adapterDBConnector.getDb().query(counterQuery, dataCount)
@@ -86,7 +89,8 @@ export class CommonEssence {
     identifyBy = null,
     limit = null,
     offset = null,
-    fields = null
+    fields = null,
+    order = null
   }: {
     from: string,
     join: string,
@@ -97,6 +101,7 @@ export class CommonEssence {
     fields?: string[] | null,
     limit?: number | null,
     offset?: number | null
+    order?: { type: 'ASC' | 'DESC', field: string } | null
   }) {
     try {
       let query = `SELECT ${fields ? fields.join(', ') : '*'} FROM ${from} JOIN ${join} ON ${from}.${identifyFrom} = ${join}.${identifyJoin}`
@@ -112,6 +117,7 @@ export class CommonEssence {
         query += !exclude ? ` WHERE ${arrIdentify.join(' and ')}` : arrIdentify.join(' and ')
         counterQuery += !exclude ? ` WHERE ${arrIdentify.join(' and ')}` : arrIdentify.join(' and ')
       }
+      if (order) query += ` ORDER BY ${order.field} ${order.type}`
       const { rows } = await adapterDBConnector.getDb().query(query)
       const counter = await adapterDBConnector.getDb().query(counterQuery)
       return { rows, count: counter.rows.length ? parseInt(counter.rows[0].count) : 0 }
@@ -135,7 +141,7 @@ export class CommonEssence {
     try {
       await adapterDBConnector.getDb().query(
         `DELETE FROM ${this.tableName} WHERE ${Object.keys(identify_data).map((item, index) => `${item} = $${index + 1}`).join(', ')}`,
-        Object.values(identify_data)
+        [...Object.values(identify_data)]
       )
       return 'ok'
     } catch(e) {

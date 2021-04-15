@@ -89,13 +89,14 @@ class AccountFriends {
       const { offset, limit } = req.query as LimitedRows
       if (!user_id && !user_id.length) throw new Error(errorFeedBack.requiredFields)
       const { rows, count }: { rows: any[], count: number } = await tables.friendship.getEssencesJoin({
-        from: 'users_info',
-        join: 'users_friendship',
-        identifyFrom: 'user_id',
-        identifyJoin: 'friend_ship_id',
+        from: 'users_friendship',
+        join: 'users_info',
+        identifyFrom: 'friend_ship_id',
+        identifyJoin: 'user_id',
         fields: ['friend_ship_id','first_name','last_name','gender','birth_date','phone', 'original_photo', 'croped_photo'],
         limit: limit ? parseInt(limit) : null,
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
+        identifyBy: { user_id: parseInt(user_id) }
       })
       const parsed_friend_ships = rows.map(item => ({
         user_id: item.friend_ship_id,
