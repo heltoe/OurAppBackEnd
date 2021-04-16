@@ -8,6 +8,7 @@ export type User = {
 
 export type UserInfo = {
   user_id: number
+  friend_id?: number
   first_name: string
   last_name: string
   gender: string
@@ -48,6 +49,12 @@ export type Message = {
   author: number,
   message: string,
   date: string,
+}
+export type ChatItemSocket = {
+  chat_id: number
+  last_message: Message
+  recipient_info: UserInfo
+  user_id: number
 }
 export type File = {
   id: number

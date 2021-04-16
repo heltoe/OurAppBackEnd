@@ -56,16 +56,17 @@ class AccountFriends {
       const { offset, limit } = req.query as LimitedRows
       if (!user_id && !user_id.length) throw new Error(errorFeedBack.requiredFields)
       const { rows, count }: { rows: UserInfo[], count: number } = await tables.friend.getEssencesJoin({
-        from: 'users_info',
-        join: 'users_friend',
-        identifyFrom: 'user_id',
+        from: 'users_friend',
+        join: 'users_info',
+        identifyFrom: 'friend_id',
         identifyJoin: 'user_id',
-        exclude: parseInt(user_id),
+        fields: ['friend_id', 'first_name', 'last_name', 'gender', 'birth_date', 'phone', 'original_photo', 'croped_photo'],
         limit: limit ? parseInt(limit) : null,
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
+        identifyBy: { user_id: parseInt(user_id) }
       })
       const parsed_friends = rows.map(item => ({
-        user_id: item.user_id,
+        user_id: item.friend_id,
         first_name: item.first_name,
         last_name: item.last_name,
         gender: item.gender,
@@ -93,7 +94,7 @@ class AccountFriends {
         join: 'users_info',
         identifyFrom: 'friend_ship_id',
         identifyJoin: 'user_id',
-        fields: ['friend_ship_id','first_name','last_name','gender','birth_date','phone', 'original_photo', 'croped_photo'],
+        fields: ['friend_ship_id', 'first_name', 'last_name', 'gender', 'birth_date', 'phone', 'original_photo', 'croped_photo'],
         limit: limit ? parseInt(limit) : null,
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
         identifyBy: { user_id: parseInt(user_id) }

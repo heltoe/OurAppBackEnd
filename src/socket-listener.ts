@@ -1,7 +1,7 @@
 import io, { Socket } from 'socket.io'
-import { UserInfo } from './models/Types'
+import { UserInfo, ChatItemSocket } from './models/Types'
 
-type IncomminMessage = {
+type IncommingMessage = {
   message_id: number
   chat_id: number
   author: number
@@ -27,7 +27,7 @@ export default class SocketListener {
       socket.on('APP:ENTER', (user_id: number) => {
         socket.join(`FRIEND_ROOM_${user_id}`)
         socket.join(`FRIENDSHIP_ROOM_${user_id}`)
-        console.log(socket.rooms)
+        socket.join(`SIDEBAR_ROOM_${user_id}`)
       })
       socket.on('FRIENDSHIP:ADD', ({ user, recipient }: { user: UserInfo, recipient: number }) => {
         socket.to(`FRIENDSHIP_ROOM_${recipient}`).emit('FRIENDSHIP:ADD_MESSAGE_SENDED', { user, recipient })
@@ -46,8 +46,11 @@ export default class SocketListener {
       socket.on('CHAT:JOIN', (chat_id: number) => {
         socket.join(`CHAT_ROOM_${chat_id}`)
       })
-      socket.on('CHAT:MESSAGE_SEND', async (data: IncomminMessage) => {
+      socket.on('CHAT:MESSAGE_SEND', (data: IncommingMessage) => {
         if (data.chat_id) socket.to(`CHAT_ROOM_${data.chat_id}`).emit('CHAT:MESSAGE_SENDED', data)
+      })
+      socket.on('SIDEBAR:MESSAGE_SEND', (data: ChatItemSocket) => {
+        socket.to(`SIDEBAR_ROOM_${data.user_id}`).emit('SIDEBAR:MESSAGE_SENDED', data)
       })
     })
   }

@@ -118,6 +118,7 @@ export class CommonEssence {
         counterQuery += !exclude ? ` WHERE ${arrIdentify.join(' and ')}` : arrIdentify.join(' and ')
       }
       if (order) query += ` ORDER BY ${order.field} ${order.type}`
+      console.log(query)
       const { rows } = await adapterDBConnector.getDb().query(query)
       const counter = await adapterDBConnector.getDb().query(counterQuery)
       return { rows, count: counter.rows.length ? parseInt(counter.rows[0].count) : 0 }

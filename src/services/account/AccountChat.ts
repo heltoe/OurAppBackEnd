@@ -25,6 +25,7 @@ type MergedDataType = {
   chat_id: number
   last_message_id: number
   recipient_id: number
+  last_update: string
 }
 class AccountChat {
   public async getListChat(req: Request, res: Response) {
@@ -38,7 +39,7 @@ class AccountChat {
         identifyFrom: 'chat_id',
         identifyJoin: 'id',
         identifyBy: { user_id },
-        fields: ['recipient_id','last_message_id','chat_id'],
+        fields: ['chat_id', 'recipient_id', 'last_message_id', 'last_update'],
         limit: limit ? parseInt(limit) : null,
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
         order: {
@@ -48,14 +49,15 @@ class AccountChat {
       })
       const arrMessagesRequests = rows.map(item => tables.messages.getEssence({ id: item.last_message_id }))
       const arrRecipientRequests = rows.map(item => tables.info.getEssence({ user_id: item.recipient_id }))
+      const arrImageRequests = rows.map(item => tables.files_messages.getEssence({ message_id: item.last_message_id }, false))
       const arrMessagesResponse = await Promise.all(arrMessagesRequests)
       const arrRecipientResponse = await Promise.all(arrRecipientRequests)
-      const arrImageRequests = rows.map(item => tables.files_messages.getEssence({ message_id: item.last_message_id }, false))
       const arrImageResponse: File[] = await Promise.all(arrImageRequests)
       const parsedRows = rows.map((item, index) => {
         const { id, message, date, author  } = arrMessagesResponse[index]
         return {
           chat_id: item.chat_id,
+          last_update: item.last_update,
           last_message: {
             message_id: id,
             message,
@@ -65,7 +67,7 @@ class AccountChat {
               ? [arrImageResponse[index].source_file]
               : arrImageResponse[index]
           },
-          recipient: {
+          recipient_info: {
             user_id: arrRecipientResponse[index].id,
             first_name: arrRecipientResponse[index].first_name,
             last_name: arrRecipientResponse[index].last_name,
