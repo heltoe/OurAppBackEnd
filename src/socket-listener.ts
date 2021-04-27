@@ -9,6 +9,11 @@ type IncommingMessage = {
   date: string
   files: string[]
 }
+
+type CallUserInfo = {
+  user_id: number
+  full_name: string
+}
 export default class SocketListener {
   private socket: any
   constructor(server: any) {
@@ -28,6 +33,7 @@ export default class SocketListener {
         socket.join(`FRIEND_ROOM_${user_id}`)
         socket.join(`FRIENDSHIP_ROOM_${user_id}`)
         socket.join(`SIDEBAR_ROOM_${user_id}`)
+        socket.join(`CALL_ROOM_${user_id}`)
       })
       socket.on('FRIENDSHIP:ADD', ({ user, recipient }: { user: UserInfo, recipient: number }) => {
         socket.to(`FRIENDSHIP_ROOM_${recipient}`).emit('FRIENDSHIP:ADD_MESSAGE_SENDED', { user, recipient })
@@ -51,6 +57,23 @@ export default class SocketListener {
       })
       socket.on('SIDEBAR:MESSAGE_SEND', (data: ChatItemSocket) => {
         socket.to(`SIDEBAR_ROOM_${data.user_id}`).emit('SIDEBAR:MESSAGE_SENDED', data)
+      })
+      //
+      socket.on('CALL:CALL_TO_USER', (data: { user: UserInfo, recipient: UserInfo }) => {
+        socket.to(`CALL_ROOM_${data.recipient.user_id}`).emit('CALL:CATCH_CALL_TO_USER', data)
+      })
+      socket.on('CALL:APPLY_OFFER_CALL', (user_id: number) => {
+        socket.to(`CALL_ROOM_${user_id}`).emit('CALL:CREATE_OFFER_SDP')
+      })
+      socket.on('CALL:DECLINE_OFFER_CALL', (user_id: number) => {
+        socket.to(`CALL_ROOM_${user_id}`).emit('CALL:DECLINE_CLEAN_CALL_DATA')
+      })
+      //
+      socket.on('CALL:SEND_ICE_CANDIDATE', (data: { recipient_id: number, iceCandidate: any }) => {
+        socket.to(`CALL_ROOM_${data.recipient_id}`).emit('CALL:ADD_PEER', data)
+      })
+      socket.on('CALL:LEAVE_FROM_CALL', (recipient_id: number) => {
+        socket.to(`CALL_ROOM_${recipient_id}`).emit('CALL:LEAVED_FROM_CALL')
       })
     })
   }
