@@ -10,10 +10,6 @@ type IncommingMessage = {
   files: string[]
 }
 
-type CallUserInfo = {
-  user_id: number
-  full_name: string
-}
 export default class SocketListener {
   private socket: any
   constructor(server: any) {
@@ -62,18 +58,21 @@ export default class SocketListener {
       socket.on('CALL:CALL_TO_USER', (data: { user: UserInfo, recipient: UserInfo }) => {
         socket.to(`CALL_ROOM_${data.recipient.user_id}`).emit('CALL:CATCH_CALL_TO_USER', data)
       })
-      socket.on('CALL:APPLY_OFFER_CALL', (user_id: number) => {
-        socket.to(`CALL_ROOM_${user_id}`).emit('CALL:CREATE_OFFER_SDP')
+      socket.on('CALL:APPLY_OFFER_CALL', (data: { to: number, recipient: UserInfo, sendler: UserInfo }) => {
+        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:CREATE_OFFER_SDP', { recipient: data.recipient, sendler: data.sendler })
       })
       socket.on('CALL:DECLINE_OFFER_CALL', (user_id: number) => {
         socket.to(`CALL_ROOM_${user_id}`).emit('CALL:DECLINE_CLEAN_CALL_DATA')
       })
       //
-      socket.on('CALL:SEND_ICE_CANDIDATE', (data: { recipient_id: number, iceCandidate: any }) => {
-        socket.to(`CALL_ROOM_${data.recipient_id}`).emit('CALL:ADD_PEER', data)
+      socket.on('CALL:SEND_OFFER_SDP', (data: { to: number, signal: any }) => {
+        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:CREATE_ANSWER_SDP', data)
       })
-      socket.on('CALL:LEAVE_FROM_CALL', (recipient_id: number) => {
-        socket.to(`CALL_ROOM_${recipient_id}`).emit('CALL:LEAVED_FROM_CALL')
+      socket.on('CALL:SEND_ANSWER_SDP', (data: { to: number, signal: any }) => {
+        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:CATCH_ANSWER_SDP', data.signal)
+      })
+      socket.on('CALL:LEAVE_FROM_CALL', (data: { to: number, from: UserInfo }) => {
+        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:LEAVED_FROM_CALL', data.from)
       })
     })
   }
