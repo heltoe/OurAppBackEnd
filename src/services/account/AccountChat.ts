@@ -72,7 +72,6 @@ class AccountChat {
             first_name: arrRecipientResponse[index].first_name,
             last_name: arrRecipientResponse[index].last_name,
             gender: arrRecipientResponse[index].gender,
-            birth_date: arrRecipientResponse[index].birth_date,
             phone: arrRecipientResponse[index].phone,
             croped_photo: arrRecipientResponse[index].croped_photo,
             original_photo: arrRecipientResponse[index].original_photo,

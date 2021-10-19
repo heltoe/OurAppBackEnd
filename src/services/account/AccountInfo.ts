@@ -28,12 +28,10 @@ class AccountInfo {
       const data: {
         first_name?: string,
         last_name?: string,
-        birth_date?: Date,
         phone?: string
       } = {}
       if (req.body.first_name) data.first_name = req.body.first_name
       if (req.body.last_name) data.last_name = req.body.last_name
-      if (req.body.birth_date) data.birth_date = req.body.birth_date
       if (req.body.phone) data.phone = req.body.phone
       if (Object.keys(data).length || req.body.email) {
         const user_info: UserInfo | User = Object.keys(data).length
@@ -49,7 +47,7 @@ class AccountInfo {
   }
   public async changeAvatar(req: Request, res: Response) {
     try {
-      const { token, user_id }: { token: string, user_id: string } = req.body
+      const { token, user_id, original_photo_name, croped_photo_name }: { token: string, user_id: string, original_photo_name: string, croped_photo_name: string } = req.body
       if (!token && !user_id) throw new Error(errorFeedBack.requiredFields)
       if (!req.files.length) throw new Error(errorFeedBack.requiredFields)
       const payload = await jwt.verify(token, settings.JWT.secret) as TokenGenerator
@@ -58,9 +56,9 @@ class AccountInfo {
       const original_file = req.files.find(item => item.fieldname === 'original_photo')
       // @ts-ignore
       const croped_file = req.files.find(item => item.fieldname === 'croped_photo')
-      if (!original_file || !original_file) throw new Error(errorFeedBack.requiredFields)
-      const original_photo = await Uploader.uploadFile(original_file, req.body.original_photo_name || '')
-      const croped_photo = await Uploader.uploadFile(croped_file, req.body.croped_photo_name || '')
+      if (!original_file || !croped_file) throw new Error(errorFeedBack.requiredFields)
+      const original_photo = await Uploader.uploadFile(original_file, original_photo_name || '')
+      const croped_photo = await Uploader.uploadFile(croped_file, croped_photo_name || '')
       await tables.info.updateEssence({ user_id: parseInt(user_id) }, { original_photo, croped_photo })
       return res.status(200).json({ original_photo, croped_photo })
     } catch(e) {

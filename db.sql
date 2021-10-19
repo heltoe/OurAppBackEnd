@@ -20,7 +20,6 @@ CREATE TABLE users_info(
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
   gender VARCHAR(6) NOT NULL,
-  birth_date date NOT NULL,
   phone VARCHAR(20) NOT NULL,
   croped_photo VARCHAR(150),
   original_photo VARCHAR(150),

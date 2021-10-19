@@ -16,7 +16,6 @@ class Registration {
       const first_name: string = req.body.first_name
       const last_name: string = req.body.last_name
       const gender: string = req.body.gender
-      const birth_date: string = req.body.birth_date
       const phone: string = req.body.phone
       if (
         !email ||
@@ -29,8 +28,6 @@ class Registration {
         !last_name.length ||
         !gender ||
         !gender.length ||
-        !birth_date ||
-        !birth_date.length ||
         !phone ||
         !phone.length
       ) throw new Error(errorFeedBack.requiredFields)
@@ -46,7 +43,6 @@ class Registration {
         first_name,
         last_name,
         gender,
-        birth_date,
         phone
       })
       const tokens: Tokens | null = await TokenCreator.updateTokens(user.id)

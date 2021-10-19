@@ -83,7 +83,6 @@ class TokenCreator {
         first_name: userInfo.first_name,
         last_name: userInfo.last_name,
         gender: userInfo.gender,
-        birth_date: userInfo.birth_date,
         phone: userInfo.phone,
         original_photo: userInfo.original_photo,
         croped_photo: userInfo.croped_photo,

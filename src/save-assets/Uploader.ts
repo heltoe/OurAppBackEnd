@@ -5,6 +5,7 @@ class Uploader {
     try {
       if (path.length) {
         const name = path.split('/')
+        console.log(path, name)
         const answer = await s3.Remove(`images/${name[name.length - 1]}`)
       }
       const upload: {

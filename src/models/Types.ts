@@ -12,7 +12,6 @@ export type UserInfo = {
   first_name: string
   last_name: string
   gender: string
-  birth_date: string
   phone: string
   original_photo: string | null
   croped_photo: string | null

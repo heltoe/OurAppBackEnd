@@ -37,7 +37,6 @@ class AccountFriends {
         original_photo: item.original_photo,
         croped_photo: item.croped_photo,
         gender: item.gender,
-        birth_date: item.birth_date,
         phone: item.phone,
         exist_in_friend_list: arrId.findIndex(item_id => item_id === item.user_id) > -1
       }))
@@ -60,7 +59,7 @@ class AccountFriends {
         join: 'users_info',
         identifyFrom: 'friend_id',
         identifyJoin: 'user_id',
-        fields: ['friend_id', 'first_name', 'last_name', 'gender', 'birth_date', 'phone', 'original_photo', 'croped_photo'],
+        fields: ['friend_id', 'first_name', 'last_name', 'gender', 'phone', 'original_photo', 'croped_photo'],
         limit: limit ? parseInt(limit) : null,
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
         identifyBy: { user_id: parseInt(user_id) }
@@ -70,7 +69,6 @@ class AccountFriends {
         first_name: item.first_name,
         last_name: item.last_name,
         gender: item.gender,
-        birth_date: item.birth_date,
         phone: item.phone,
         original_photo: item.original_photo,
         croped_photo: item.croped_photo,
@@ -94,7 +92,7 @@ class AccountFriends {
         join: 'users_info',
         identifyFrom: 'friend_ship_id',
         identifyJoin: 'user_id',
-        fields: ['friend_ship_id', 'first_name', 'last_name', 'gender', 'birth_date', 'phone', 'original_photo', 'croped_photo'],
+        fields: ['friend_ship_id', 'first_name', 'last_name', 'gender', 'phone', 'original_photo', 'croped_photo'],
         limit: limit ? parseInt(limit) : null,
         offset: offset && limit ? parseInt(offset) * parseInt(limit) : null,
         identifyBy: { user_id: parseInt(user_id) }
@@ -104,7 +102,6 @@ class AccountFriends {
         first_name: item.first_name,
         last_name: item.last_name,
         gender: item.gender,
-        birth_date: item.birth_date,
         phone: item.phone,
         original_photo: item.original_photo,
         croped_photo: item.croped_photo,
