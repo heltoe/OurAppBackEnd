@@ -58,8 +58,8 @@ export default class SocketListener {
       socket.on('CALL:CALL_TO_USER', (data: { user: UserInfo, recipient: UserInfo }) => {
         socket.to(`CALL_ROOM_${data.recipient.user_id}`).emit('CALL:CATCH_CALL_TO_USER', data)
       })
-      socket.on('CALL:APPLY_CALL', (data: { to: number }) => {
-        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:ANSWER_APPLY_CALL')
+      socket.on('CALL:APPLY_CALL', (data: number) => {
+        socket.to(`CALL_ROOM_${data}`).emit('CALL:ANSWER_APPLY_CALL')
       })
       socket.on('CALL:DECLINE_OFFER_CALL', (user_id: number) => {
         socket.to(`CALL_ROOM_${user_id}`).emit('CALL:DECLINE_CLEAN_CALL_DATA')

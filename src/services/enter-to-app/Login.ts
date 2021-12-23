@@ -7,6 +7,7 @@ import { errorFeedBack } from '../../FeedBack'
 class Login {
   public async login(req: Request, res: Response) {
     try {
+      console.log(req.body)
       const email: string = req.body.email
       const password: string = req.body.password
       if (!email.length || !password.length) throw new Error(errorFeedBack.requiredFields)
