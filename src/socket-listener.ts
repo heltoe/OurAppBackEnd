@@ -58,15 +58,15 @@ export default class SocketListener {
       socket.on('CALL:CALL_TO_USER', (data: { user: UserInfo, recipient: UserInfo }) => {
         socket.to(`CALL_ROOM_${data.recipient.user_id}`).emit('CALL:CATCH_CALL_TO_USER', data)
       })
-      socket.on('CALL:APPLY_OFFER_CALL', (data: { to: number, recipient: UserInfo, sendler: UserInfo }) => {
-        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:CREATE_OFFER_SDP', { recipient: data.recipient, sendler: data.sendler })
+      socket.on('CALL:APPLY_CALL', (data: { to: number }) => {
+        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:ANSWER_APPLY_CALL')
       })
       socket.on('CALL:DECLINE_OFFER_CALL', (user_id: number) => {
         socket.to(`CALL_ROOM_${user_id}`).emit('CALL:DECLINE_CLEAN_CALL_DATA')
       })
       //
       socket.on('CALL:SEND_OFFER_SDP', (data: { to: number, signal: any }) => {
-        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:CREATE_ANSWER_SDP', data)
+        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:CATCH_OFFER_SDP', data.signal)
       })
       socket.on('CALL:SEND_ANSWER_SDP', (data: { to: number, signal: any }) => {
         socket.to(`CALL_ROOM_${data.to}`).emit('CALL:CATCH_ANSWER_SDP', data.signal)
