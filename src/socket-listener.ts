@@ -9,6 +9,10 @@ type IncommingMessage = {
   date: string
   files: string[]
 }
+type FromStateAudioVideo = {
+  id: number
+  state: boolean
+}
 
 export default class SocketListener {
   private socket: any
@@ -73,6 +77,13 @@ export default class SocketListener {
       })
       socket.on('CALL:LEAVE_FROM_CALL', (data: { to: number, from: UserInfo }) => {
         socket.to(`CALL_ROOM_${data.to}`).emit('CALL:LEAVED_FROM_CALL', data.from)
+      })
+      // смена состояния аудио/видео
+      socket.on('CALL:SEND_TOGGLE_STATE_AUDIO', (data: { to: number, from: FromStateAudioVideo }) => {
+        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:CATCH_TOGGLE_STATE_AUDIO', { id: data.from.id, state: data.from.state })
+      })
+      socket.on('CALL:SEND_TOGGLE_STATE_VIDEO', (data: { to: number, from: FromStateAudioVideo }) => {
+        socket.to(`CALL_ROOM_${data.to}`).emit('CALL:CATCH_TOGGLE_STATE_VIDEO', { id: data.from.id, state: data.from.state })
       })
     })
   }

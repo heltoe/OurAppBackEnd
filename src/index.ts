@@ -9,7 +9,10 @@ import router from './router'
 import SocketListener from './socket-listener'
 import adapterDBConnector from './adapter-db-connector'
 import { errorFeedBack } from './FeedBack'
+// import { createServer  } from 'https'
 import { createServer  } from 'http'
+import fs from 'fs'
+import path from 'path'
 
 
 export const s3 = new EasyYandexS3({
@@ -26,7 +29,12 @@ class Server {
   private server: any
   private socket: any
   constructor() {
+    // const httpsOptions = {
+    //   cert: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.key')),
+    //   key: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.pem'))
+    // }
     this.app = express()
+    // this.server = createServer(httpsOptions, this.app)
     this.server = createServer(this.app)
     this.config()
     this.routes()
