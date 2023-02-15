@@ -1,4 +1,3 @@
-import Pool from 'pg'
 import { Client } from 'pg'
 import settings from './settings'
 
@@ -9,12 +8,12 @@ class AdapterDB {
   }
   public connect() {
     this.db = new Client({
-      user: 'postgres',
-      password: 'postgres',
-      database: 'chat',
-      host: 'localhost',
-      port: 5334,
-      connectionString: settings.POSTGRESS_URI
+      user: settings.POSTGRES_USER,
+      password: settings.POSTGRES_PASSWORD,
+      database: settings.POSTGRES_DB,
+      host: settings.POSTGRES_HOST,
+      port: Number(settings.POSTGRES_PORT),
+      connectionString: settings.POSTGRESS_URI,
     })
     return this.db.connect()
   }

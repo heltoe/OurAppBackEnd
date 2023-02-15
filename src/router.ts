@@ -3,6 +3,7 @@ import Registration from './services/enter-to-app/Registration'
 import ResetPassword from './services/enter-to-app/ResetPassword'
 import Login from './services/enter-to-app/Login'
 import Logout from './services/enter-to-app/Logout'
+import Intro from './services/enter-to-app/Intro'
 import Token from './token-creator/tokenCreator'
 import authMiddleware from './middleware/auth'
 import AccountInfo from './services/account/AccountInfo'
@@ -20,6 +21,7 @@ class Routes {
   }
   private routes(): void {
     // enter-to-app-service
+    this.router.get('/api', Intro.intro)
     this.router.post('/api/registration', Registration.registration)
     this.router.post('/api/reset-password', ResetPassword.resetPassword)
     this.router.post('/api/login', Login.login)

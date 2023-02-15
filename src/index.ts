@@ -58,7 +58,7 @@ class Server {
       await adapterDBConnector.connect()
       this.startServer()
     } catch(e) {
-      console.log(errorFeedBack.connectDb)
+      console.log(`${errorFeedBack.connectDb} on ${settings.DOMAIN}`)
     }
   }
 }
